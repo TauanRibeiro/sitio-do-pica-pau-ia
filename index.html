@@ -1,13 +1,27 @@
 <!doctype html>
-<html lang="en">
+<html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/sitio-do-pica-pau-ia/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite + React</title>
+    <meta name="description" content="Jogo da memória com IA e música gerativa baseado no Sítio do Pica-Pau Amarelo" />
+    <meta name="keywords" content="jogo, memória, IA, Sítio do Pica-Pau Amarelo, educação, feira de ciências" />
+    <meta name="theme-color" content="#0ea5e9" />
+    <link rel="manifest" href="/sitio-do-pica-pau-ia/manifest.json" />
+    <title>Sítio do Pica-Pau IA</title>
   <!-- Tone.js via CDN fallback for runtime (also installed via npm) -->
   <script src="https://unpkg.com/tone/build/Tone.js"></script>
-    <script type="module" crossorigin src="/sitio-do-pica-pau-ia/assets/index-Cf72WHnr.js"></script>
+    <script>
+      // Register Service Worker for PWA
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then(registration => console.log('SW registered'))
+            .catch(error => console.log('SW registration failed'));
+        });
+      }
+    </script>
+    <script type="module" crossorigin src="/sitio-do-pica-pau-ia/assets/index-Di2RmnZP.js"></script>
     <link rel="stylesheet" crossorigin href="/sitio-do-pica-pau-ia/assets/index-B8zlHKKd.css">
   </head>
   <body>

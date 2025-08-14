@@ -1,0 +1,45 @@
+{
+  "name": "Sítio do Pica-Pau IA",
+  "short_name": "PicaPau IA",
+  "description": "Jogo da memória com IA e música gerativa baseado no Sítio do Pica-Pau Amarelo",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#1e1a4b",
+  "theme_color": "#0ea5e9",
+  "orientation": "portrait-primary",
+  "scope": "./",
+  "lang": "pt-BR",
+  "categories": ["games", "education", "entertainment"],
+  "icons": [
+    {
+      "src": "vite.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "screenshot1.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Jogo Virtual",
+      "short_name": "Jogo",
+      "description": "Jogar o jogo da memória virtual",
+      "url": "./?view=game",
+      "icons": [{ "src": "vite.svg", "sizes": "96x96" }]
+    },
+    {
+      "name": "Reconhecimento",
+      "short_name": "Câmera",
+      "description": "Usar a câmera para reconhecer cartas",
+      "url": "./?view=vision",
+      "icons": [{ "src": "vite.svg", "sizes": "96x96" }]
+    }
+  ]
+}
