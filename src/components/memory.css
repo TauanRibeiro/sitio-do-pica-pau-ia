@@ -1,0 +1,15 @@
+.memory-container { max-width:900px; margin: 1rem auto; padding: 1rem; }
+.grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 1rem; }
+.card { position: relative; height: 120px; border-radius: 12px; cursor: pointer; perspective: 1000px; }
+.card .front, .card .back { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; border-radius:12px; font-weight:900; font-size:1.1rem; backface-visibility:hidden; transform-style:preserve-3d; transition: transform .45s ease; text-shadow: 0 2px 6px rgba(0,0,0,.35); }
+.card .front { background:linear-gradient(90deg,#0ea5e9,#2563eb); color:#ffffff; transform: rotateY(180deg); }
+.card .back { background:linear-gradient(90deg,#0b1020,#0b1220); border:1px solid rgba(255,255,255,.12); transform: rotateY(0deg); color: #ffffff; }
+.card .front img { width: 72px; height: 72px; border-radius: 10px; box-shadow: 0 8px 16px rgba(0,0,0,.3); margin-right:.5rem; }
+.card .front .name { font-size:1rem; font-weight:900; letter-spacing:.2px; }
+.card.flipped .front { transform: rotateY(0deg); }
+.card.flipped .back { transform: rotateY(180deg); }
+
+@media (max-width: 600px){
+	.grid { grid-template-columns: repeat(3, 1fr); }
+	.card { height: 100px; }
+}

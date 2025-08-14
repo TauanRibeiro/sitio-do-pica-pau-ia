@@ -13,8 +13,12 @@
     "deploy": "gh-pages -d dist"
   },
   "dependencies": {
+    "@tensorflow-models/mobilenet": "^2.1.1",
+    "@tensorflow/tfjs": "^4.22.0",
+    "gsap": "^3.13.0",
     "react": "^19.1.1",
-    "react-dom": "^19.1.1"
+    "react-dom": "^19.1.1",
+    "tone": "^14.7.77"
   },
   "devDependencies": {
     "@eslint/js": "^9.33.0",
