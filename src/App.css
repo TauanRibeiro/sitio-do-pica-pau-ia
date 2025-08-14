@@ -1,0 +1,89 @@
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+
+.app-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #ffe066 0%, #ffb347 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  font-family: 'Comic Sans MS', 'Arial', sans-serif;
+}
+
+.app-header {
+  margin-top: 2rem;
+  text-align: center;
+  color: #2d2d2d;
+}
+
+.controls {
+  display: flex;
+  gap: 1rem;
+  margin: 2rem 0;
+}
+
+.camera-btn, .mic-btn, .music-btn {
+  background: #fff176;
+  border: 2px solid #ff9800;
+  color: #2d2d2d;
+  font-size: 1.1rem;
+  padding: 0.8rem 1.5rem;
+  border-radius: 1.5rem;
+  cursor: pointer;
+  box-shadow: 0 2px 8px #ffb34788;
+  transition: background 0.2s, transform 0.2s;
+}
+.camera-btn:hover, .mic-btn:hover, .music-btn:hover {
+  background: #ffd54f;
+  transform: scale(1.05);
+}
+
+.game-area {
+  width: 90vw;
+  max-width: 600px;
+  background: #fffde7;
+  border-radius: 2rem;
+  box-shadow: 0 4px 16px #ffb34755;
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+.camera-view, .camera-placeholder {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  color: #388e3c;
+  font-size: 1.2rem;
+}
+.memory-game {
+  text-align: center;
+  color: #1976d2;
+  font-size: 1.3rem;
+  font-weight: bold;
+  margin-top: 1rem;
+}
+.app-footer {
+  text-align: center;
+  color: #6d4c41;
+  margin-bottom: 1rem;
+  font-size: 1rem;
+}
+}
+
+.card {
+  padding: 2em;
+}
+
+.read-the-docs {
+  color: #888;
+}
