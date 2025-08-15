@@ -1,15 +1,550 @@
-.memory-container { max-width:900px; margin: 1rem auto; padding: 1rem; }
-.grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 1rem; }
-.card { position: relative; height: 120px; border-radius: 12px; cursor: pointer; perspective: 1000px; }
-.card .front, .card .back { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; border-radius:12px; font-weight:900; font-size:1.1rem; backface-visibility:hidden; transform-style:preserve-3d; transition: transform .45s ease; text-shadow: 0 2px 6px rgba(0,0,0,.35); }
-.card .front { background:linear-gradient(90deg,#0ea5e9,#2563eb); color:#ffffff; transform: rotateY(180deg); }
-.card .back { background:linear-gradient(90deg,#0b1020,#0b1220); border:1px solid rgba(255,255,255,.12); transform: rotateY(0deg); color: #ffffff; }
-.card .front img { width: 72px; height: 72px; border-radius: 10px; box-shadow: 0 8px 16px rgba(0,0,0,.3); margin-right:.5rem; }
-.card .front .name { font-size:1rem; font-weight:900; letter-spacing:.2px; }
-.card.flipped .front { transform: rotateY(0deg); }
-.card.flipped .back { transform: rotateY(180deg); }
+/* Mobile-first CSS for Memory Game - Alto Contraste */
+.memory-container { 
+  --card-size: 128px; /* default */
+  max-width: 1100px; 
+  margin: 0.5rem auto; 
+  padding: 0.75rem; 
+  position: relative;
+  min-height: 100vh;
+  min-height: 100dvh;
+  box-sizing: border-box;
+  background: #FFFFFF;
+  border-radius: 20px;
+  border: 4px solid #000000;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+}
 
-@media (max-width: 600px){
-	.grid { grid-template-columns: repeat(3, 1fr); }
-	.card { height: 100px; }
+/* === HEADER DO JOGO === */
+.game-header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  padding: 1.5rem;
+  background: #FFD700;
+  border-radius: 16px;
+  border: 3px solid #000000;
+}
+
+.game-title {
+  color: #000000;
+  font-size: 1.8rem;
+  font-weight: 900;
+  margin: 0 0 1rem 0;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+  letter-spacing: 0.5px;
+}
+
+/* === SELETOR DE DIFICULDADE === */
+.difficulty-selector {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+  margin: 1rem 0;
+}
+
+.difficulty-btn {
+  padding: 0.75rem 1.2rem;
+  font-size: 1rem;
+  font-weight: 800;
+  background: #FFFFFF;
+  color: #000000;
+  border: 3px solid #000000;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 48px;
+  min-width: 120px;
+}
+
+.difficulty-btn:hover {
+  background: #F0F0F0;
+  transform: translateY(-2px);
+}
+
+.difficulty-btn.active {
+  background: #32CD32;
+  color: #000000;
+  font-weight: 900;
+}
+
+/* === CONTROLES DO JOGO === */
+.game-controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+  margin: 1rem 0;
+}
+
+.control-btn {
+  padding: 0.75rem 1rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  background: #FFFFFF;
+  color: #000000;
+  border: 3px solid #000000;
+  border-radius: 8px;
+  cursor: pointer;
+  min-height: 48px;
+  transition: all 0.2s ease;
+}
+
+.control-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+}
+
+/* === ESTATÍSTICAS DO JOGO === */
+.game-stats {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.8rem 1.2rem;
+  background: #FFFFFF;
+  border: 2px solid #000000;
+  border-radius: 8px;
+  font-weight: 700;
+  color: #000000;
+  min-width: 100px;
+  justify-content: center;
+}
+
+.stat-icon {
+  font-size: 1.2rem;
+}
+
+.stat-value {
+  font-weight: 900;
+  color: #FF4500;
+}
+
+/* === GRID DE CARTAS === */
+.grid {
+  display: grid;
+  gap: 0.5rem;
+  justify-content: center;
+  margin: 1rem 0;
+  padding: 0.5rem;
+}
+
+/* Responsive grid layouts */
+.difficulty-easy .grid {
+  grid-template-columns: repeat(3, var(--card-size));
+}
+
+.difficulty-medium .grid {
+  grid-template-columns: repeat(4, var(--card-size));
+}
+
+.difficulty-hard .grid {
+  grid-template-columns: repeat(6, var(--card-size));
+}
+
+/* === CARTAS === */
+.card {
+  background: linear-gradient(135deg, var(--theme-accent, #FF4500) 0%, #FF6B47 100%);
+}
+
+.melody-btn {
+  background: linear-gradient(135deg, var(--theme-secondary, #8B4513) 0%, #A0522D 100%);
+}
+
+.music-btn {
+  background: linear-gradient(135deg, var(--theme-secondary, #8B4513) 0%, #A0522D 100%);
+}
+
+.music-btn.playing {
+  background: linear-gradient(135deg, #ff4444 0%, #ff6666 100%);
+  animation: musicPulse 2s ease-in-out infinite;
+}
+
+@keyframes musicPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+.leaderboard-btn {
+  background: linear-gradient(135deg, var(--theme-primary, #FFD700) 0%, var(--theme-accent, #FF4500) 100%);
+  color: var(--theme-text, #2F4F2F);
+}
+
+/* === ESTATÍSTICAS DO JOGO === */
+.game-stats {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background: var(--theme-card, #FFFACD)/60;
+  border-radius: 12px;
+  border: 1px solid var(--theme-primary, #FFD700)/30;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  color: var(--theme-text, #2F4F2F);
+}
+
+.stat-icon {
+  font-size: 1.2rem;
+}
+
+.stat-label {
+  font-size: 0.9rem;
+}
+
+.stat-value {
+  font-size: 1rem;
+  font-weight: 900;
+  color: var(--theme-primary, #FFD700);
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+}
+
+/* === GRID E CARTAS === */
+.grid { 
+  display: grid; 
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem; 
+  margin: 1.5rem 0;
+  justify-items: center;
+  padding: 1rem;
+  background: linear-gradient(135deg, var(--theme-card, #FFFACD)/30 0%, var(--theme-background, #FFF8DC)/50 100%);
+  border-radius: 20px;
+  border: 2px solid var(--theme-primary, #FFD700)/30;
+  backdrop-filter: blur(5px);
+}
+
+/* Cartas com estilo do Sítio */
+.card { 
+  position: relative; 
+  width: var(--card-size);
+  height: var(--card-size);
+  border-radius: 20px; 
+  cursor: pointer; 
+  perspective: 1000px; 
+  transition: all 0.3s ease;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.card:hover { 
+  transform: translateY(-4px) scale(1.02);
+  filter: brightness(1.1);
+}
+
+.card:active { 
+  transform: scale(0.95); 
+}
+
+.card .front, .card .back { 
+  position: absolute; 
+  inset: 0; 
+  display: flex; 
+  flex-direction: column; 
+  align-items: center; 
+  justify-content: center; 
+  border-radius: 20px; 
+  font-weight: 900; 
+  font-size: 0.9rem; 
+  backface-visibility: hidden; 
+  transform-style: preserve-3d; 
+  transition: all 0.6s ease; 
+  text-shadow: 0 2px 6px rgba(0,0,0,0.35);
+  box-sizing: border-box;
+  border: 3px solid;
+}
+
+/* Frente da carta - Personagem */
+.card .front { 
+  background: linear-gradient(135deg, var(--theme-card, #FFFACD) 0%, var(--theme-primary, #FFD700)/40 100%);
+  border-color: var(--theme-accent, #FF4500);
+  color: var(--theme-text, #2F4F2F); 
+  transform: rotateY(180deg); 
+  box-shadow: 
+    inset 0 0 0 2px rgba(255,255,255,0.5),
+    inset 0 -8px 20px rgba(0,0,0,0.1),
+    0 8px 25px rgba(255,215,0,0.3);
+}
+
+/* Verso da carta - Logo do Sítio */
+.card .back { 
+  background: linear-gradient(135deg, var(--theme-secondary, #8B4513) 0%, var(--theme-primary, #FFD700)/20 100%);
+  border-color: var(--theme-primary, #FFD700);
+  transform: rotateY(0deg); 
+  color: var(--theme-primary, #FFD700); 
+  box-shadow: 
+    0 8px 25px rgba(0,0,0,0.3),
+    inset 0 0 0 2px rgba(255,215,0,0.3);
+}
+
+.card .front img { 
+  width: calc(var(--card-size) * 0.7); 
+  height: calc(var(--card-size) * 0.7); 
+  border-radius: 16px; 
+  box-shadow: 0 6px 20px rgba(0,0,0,0.3); 
+  margin-bottom: 0.5rem; 
+  object-fit: cover; 
+  border: 2px solid rgba(255,255,255,0.6);
+}
+
+.card .front .name { 
+  font-size: 0.8rem; 
+  font-weight: 800; 
+  letter-spacing: 0.5px; 
+  text-align: center; 
+  max-width: 100%; 
+  overflow: hidden; 
+  text-overflow: ellipsis; 
+  white-space: nowrap; 
+  padding: 0 4px;
+  line-height: 1.2;
+  color: var(--theme-text, #2F4F2F);
+  text-shadow: 1px 1px 3px rgba(255,255,255,0.8);
+}
+
+.card .back {
+  font-size: 3rem;
+  text-shadow: 2px 2px 8px rgba(0,0,0,0.5);
+}
+
+/* === LOGO DO SÍTIO NO VERSO DAS CARTAS === */
+.sitio-logo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.casa-icon {
+  font-size: 2.5rem;
+  text-shadow: 2px 2px 8px rgba(0,0,0,0.5);
+  filter: drop-shadow(0 0 10px var(--theme-primary, #FFD700));
+}
+
+.sitio-text {
+  font-size: 0.9rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--theme-primary, #FFD700);
+  text-shadow: 1px 1px 4px rgba(0,0,0,0.7);
+}
+
+/* === ANIMAÇÕES E EFEITOS === */
+.card.flipped .front { 
+  transform: rotateY(0deg); 
+}
+
+.card.flipped .back { 
+  transform: rotateY(180deg); 
+}
+
+.card.matched { 
+  animation: sitioMatch 0.8s ease-out;
+}
+
+@keyframes sitioMatch {
+  0% { transform: scale(1); }
+  50% { 
+    transform: scale(1.15) rotateZ(5deg); 
+    box-shadow: 0 0 30px var(--theme-primary, #FFD700);
+  }
+  100% { 
+    transform: scale(1); 
+    filter: brightness(1.2) saturate(1.3);
+  }
+}
+
+.card.miss {
+  animation: sitioMiss 0.5s ease-in-out;
+}
+
+@keyframes sitioMiss {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-8px) rotateZ(-2deg); }
+  75% { transform: translateX(8px) rotateZ(2deg); }
+}
+
+/* === CELEBRAÇÃO DE VITÓRIA === */
+.celebration-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle, var(--theme-primary, #FFD700)/20 0%, transparent 70%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: celebrationFade 1s ease-out;
+  pointer-events: none;
+}
+
+.celebration-text {
+  font-size: 3rem;
+  font-weight: 900;
+  color: var(--theme-primary, #FFD700);
+  text-shadow: 
+    3px 3px 0 var(--theme-accent, #FF4500),
+    6px 6px 20px rgba(0,0,0,0.5);
+  animation: celebrationBounce 1s ease-out;
+  text-align: center;
+}
+
+@keyframes celebrationFade {
+  0% { opacity: 0; }
+  50% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@keyframes celebrationBounce {
+  0% { transform: scale(0.5) rotateZ(-10deg); }
+  50% { transform: scale(1.2) rotateZ(5deg); }
+  100% { transform: scale(1) rotateZ(0deg); }
+}
+
+/* === RESPONSIVIDADE === */
+@media (max-width: 480px) {
+  .memory-container {
+    --card-size: 110px;
+    padding: 0.5rem;
+  }
+  
+  .game-title {
+    font-size: 1.3rem;
+  }
+  
+  .game-controls {
+    gap: 0.5rem;
+  }
+  
+  .control-btn {
+    padding: 0.6rem 0.8rem;
+    font-size: 0.8rem;
+  }
+  
+  .grid {
+    gap: 0.75rem;
+    padding: 0.75rem;
+  }
+}
+
+@keyframes matchPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); box-shadow: 0 0 20px rgba(52, 211, 153, 0.6); }
+  100% { transform: scale(1); }
+}
+
+@keyframes missShake {
+  0% { transform: translateX(0) }
+  25% { transform: translateX(-6px) }
+  50% { transform: translateX(6px) }
+  75% { transform: translateX(-4px) }
+  100% { transform: translateX(0) }
+}
+
+.celebration-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeInOut 1s ease-in-out;
+}
+
+.celebration-text {
+  font-size: 1.3rem;
+  font-weight: 900;
+  color: #ffd700;
+  text-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
+  animation: bounce 0.6s ease-out;
+  text-align: center;
+  padding: 1rem;
+}
+
+@keyframes fadeInOut {
+  0% { opacity: 0; }
+  20% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-10px); }
+  60% { transform: translateY(-5px); }
+}
+
+/* Difficulty-aware responsive layout */
+/* Phones */
+@media (max-width: 480px) {
+  .memory-container { padding: 0.5rem; }
+  .grid { gap: 0.5rem; padding: 0 0.25rem; }
+  .memory-container.difficulty-easy { --card-size: 150px; }
+  .memory-container.difficulty-easy .grid { grid-template-columns: repeat(3, 1fr); }
+  .memory-container.difficulty-medium { --card-size: 135px; }
+  .memory-container.difficulty-medium .grid { grid-template-columns: repeat(3, 1fr); }
+  .memory-container.difficulty-hard { --card-size: 110px; }
+  .memory-container.difficulty-hard .grid { grid-template-columns: repeat(3, 1fr); }
+  .card .front .name { font-size: 0.7rem; }
+  .celebration-text { font-size: 1.1rem; }
+}
+
+/* Tablet portrait (481px to 768px) */
+@media (min-width: 481px) and (max-width: 768px) {
+  .memory-container.difficulty-easy { --card-size: 170px; }
+  .memory-container.difficulty-easy .grid { grid-template-columns: repeat(3, 1fr); }
+  .memory-container.difficulty-medium { --card-size: 150px; }
+  .memory-container.difficulty-medium .grid { grid-template-columns: repeat(3, 1fr); }
+  .memory-container.difficulty-hard { --card-size: 128px; }
+  .memory-container.difficulty-hard .grid { grid-template-columns: repeat(3, 1fr); }
+  .grid { gap: 0.8rem; }
+  .celebration-text { font-size: 1.6rem; }
+}
+
+/* Tablet landscape (769px to 1024px) */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .memory-container.difficulty-easy { --card-size: 180px; }
+  .memory-container.difficulty-easy .grid { grid-template-columns: repeat(3, 1fr); }
+  .memory-container.difficulty-medium { --card-size: 160px; }
+  .memory-container.difficulty-medium .grid { grid-template-columns: repeat(3, 1fr); }
+  .memory-container.difficulty-hard { --card-size: 140px; }
+  .memory-container.difficulty-hard .grid { grid-template-columns: repeat(3, 1fr); }
+  .grid { gap: 1rem; }
+  .celebration-text { font-size: 2rem; }
+}
+
+/* Desktop (1025px and up) */
+@media (min-width: 1025px) {
+  .memory-container { margin: 1rem auto; padding: 1rem; }
+  .memory-container.difficulty-easy { --card-size: 200px; }
+  .memory-container.difficulty-easy .grid { grid-template-columns: repeat(3, 1fr); }
+  .memory-container.difficulty-medium { --card-size: 170px; }
+  .memory-container.difficulty-medium .grid { grid-template-columns: repeat(3, 1fr); }
+  .memory-container.difficulty-hard { --card-size: 150px; }
+  .memory-container.difficulty-hard .grid { grid-template-columns: repeat(3, 1fr); }
+  .grid { gap: 1.1rem; padding: 0; }
+  .card:hover { transform: scale(1.05); }
+  .card:active { transform: scale(0.98); }
+  .card .front .name { font-size: 0.95rem; }
+  .card .front, .card .back { font-size: 1.1rem; }
+  .celebration-text { font-size: 2.2rem; }
 }

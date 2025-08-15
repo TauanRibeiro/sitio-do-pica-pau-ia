@@ -1,0 +1,45 @@
+{
+  "name": "Sítio do Pica-Pau IA - Jogo da Memória",
+  "short_name": "Sítio Memória",
+  "description": "Jogo da memória educativo baseado nos personagens do Sítio do Pica-Pau Amarelo",
+  "start_url": "/sitio-do-pica-pau-ia/",
+  "display": "fullscreen",
+  "background_color": "#1a1a1a",
+  "theme_color": "#FFD700",
+  "orientation": "portrait",
+  "scope": "/sitio-do-pica-pau-ia/",
+  "lang": "pt-BR",
+  "categories": ["games", "education", "entertainment"],
+  "icons": [
+    {
+      "src": "vite.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "screenshot1.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Jogo Virtual",
+      "short_name": "Jogo",
+      "description": "Jogar o jogo da memória virtual",
+      "url": "./?view=game",
+      "icons": [{ "src": "vite.svg", "sizes": "96x96" }]
+    },
+    {
+      "name": "Reconhecimento",
+      "short_name": "Câmera",
+      "description": "Usar a câmera para reconhecer cartas",
+      "url": "./?view=vision",
+      "icons": [{ "src": "vite.svg", "sizes": "96x96" }]
+    }
+  ]
+}

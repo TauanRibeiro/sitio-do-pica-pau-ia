@@ -1,0 +1,193 @@
+/* Theme Variables - Default Sítio Clássico Theme */
+:root {
+  --theme-primary: #FFD700;
+  --theme-secondary: #8B4513;
+  --theme-accent: #FF4500;
+  --theme-background: #FFF8DC;
+  --theme-text: #2F4F2F;
+  --theme-card: #FFFACD;
+  --theme-cardBg: #FFFACD;
+}
+
+/* Theme Selector Modal */
+.theme-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease;
+}
+
+.theme-modal {
+  background: linear-gradient(135deg, var(--theme-background) 0%, var(--theme-primary)/20 100%);
+  backdrop-filter: blur(20px);
+  border: 2px solid var(--theme-primary);
+  border-radius: 2rem;
+  padding: 2rem;
+  max-width: 700px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+.theme-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid var(--theme-primary);
+  padding-bottom: 1rem;
+}
+
+.theme-header h2 {
+  margin: 0;
+  color: var(--theme-text);
+  font-size: 1.5rem;
+  font-weight: bold;
+  font-weight: 900;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+.theme-description {
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 2rem;
+  text-align: center;
+  font-size: 1.1rem;
+}
+
+.themes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.theme-card {
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.theme-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+}
+
+.theme-card.active {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(74, 222, 128, 0.3);
+}
+
+.theme-preview {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  margin-bottom: 1rem;
+  backdrop-filter: blur(10px);
+}
+
+.theme-color-dot {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.theme-name {
+  text-align: center;
+  font-weight: 700;
+  font-size: 1.1rem;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  margin-bottom: 0.5rem;
+}
+
+.theme-active-badge {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  background: var(--theme-primary);
+  color: #000;
+  font-size: 0.8rem;
+  font-weight: 900;
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
+  animation: badgePulse 2s ease-in-out infinite;
+}
+
+.theme-footer {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.7);
+  font-style: italic;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 1rem;
+  font-size: 0.95rem;
+}
+
+/* Apply theme colors to existing elements inside the memory game only */
+.memory-container .card {
+  background: var(--theme-cardBg);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.memory-container .card.matched {
+  background: linear-gradient(145deg, var(--theme-primary), transparent);
+  box-shadow: 0 4px 20px rgba(74, 222, 128, 0.3);
+}
+
+.memory-container .small-btn {
+  border-color: var(--theme-primary);
+  color: var(--theme-text);
+}
+
+.memory-container .small-btn:hover {
+  background: var(--theme-primary);
+  color: #000;
+  box-shadow: 0 4px 15px rgba(74, 222, 128, 0.4);
+}
+
+.memory-container .small-btn.active {
+  background: var(--theme-primary);
+  color: #000;
+  box-shadow: 0 0 20px var(--theme-primary);
+}
+
+.memory-container .celebration-text {
+  color: var(--theme-primary);
+  text-shadow: 0 4px 20px var(--theme-primary);
+}
+
+/* Stat displays (scoped) */
+.memory-container [style*="color:#34d399"] { color: var(--theme-primary); }
+.memory-container [style*="color:#fbbf24"] { color: var(--theme-secondary); }
+.memory-container [style*="color:#a78bfa"] { color: var(--theme-accent); }
+.memory-container [style*="color:#60a5fa"] { color: var(--theme-accent); }
+
+/* Mobile Responsiveness */
+@media (max-width: 640px) {
+  .theme-modal {
+    padding: 1.5rem;
+    margin: 1rem;
+  }
+  
+  .themes-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .theme-card {
+    padding: 1.25rem;
+  }
+}

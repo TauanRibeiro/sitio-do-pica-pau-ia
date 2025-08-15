@@ -1,0 +1,65 @@
+/* iOS Safari specific fixes */
+* {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+input, button, textarea {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+html {
+  height: 100%;
+  height: 100vh;
+  height: 100dvh;
+}
+
+body {
+  height: 100%;
+  height: 100vh;
+  height: 100dvh;
+  margin: 0;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  position: relative;
+}
+
+/* Prevent zoom on iOS */
+input, select, textarea, button {
+  font-size: 16px;
+}
+
+/* Fullscreen mode support */
+@supports (padding: max(0px)) {
+  body {
+    padding-left: max(12px, env(safe-area-inset-left));
+    padding-right: max(12px, env(safe-area-inset-right));
+    padding-top: max(12px, env(safe-area-inset-top));
+    padding-bottom: max(12px, env(safe-area-inset-bottom));
+  }
+}
+
+/* CSS for better mobile UX */
+@media (max-width: 768px) {
+  html {
+    font-size: 14px;
+  }
+  
+  button {
+    min-height: 44px; /* iOS touch target minimum */
+    min-width: 44px;
+  }
+}
+
+/* Dark theme by default */
+:root {
+  --theme-primary: #FFD700;
+  --theme-secondary: #228B22;
+  --theme-accent: #FF6347;
+  --theme-background: #FFF8DC;
+  --theme-text: #2F4F2F;
+  --theme-card: #FFFACD;
+}

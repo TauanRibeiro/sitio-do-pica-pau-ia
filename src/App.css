@@ -96,9 +96,6 @@ body::-webkit-scrollbar-thumb {
   background: linear-gradient(180deg,#6a11cb,#2575fc);
   border-radius: 8px;
 }
-.card {
-  padding: 2em;
-}
 
 .read-the-docs {
   color: #888;

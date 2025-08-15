@@ -1,4 +1,4 @@
-# 🏡 Sítio do Pica### **3 Níveis de Dificuldade**: Fácil (6 cartas), Médio (12 cartas), Difícil (12 cartas únicas)Pau IA
+# 🏡 Sítio do Pica-Pau IA
 
 ![Vite](https://img.shields.io/badge/Bundler-Vite-646CFF?style=for-the-badge&logo=vite)
 ![React](https://img.shields.io/badge/Frontend-React-61DAFB?style=for-the-badge&logo=react)
@@ -38,18 +38,24 @@
 - **Efeitos Profissionais**: Reverb, delay e síntese avançada
 
 ### 🎨 **Temas e Personalização**
-- **5 Temas Visuais**: Sítio Clássico, Floresta, Pôr do Sol, Oceano, Galáxia
+- **3 Temas Visuais**: Sítio Clássico, Floresta da Cuca, Reino de Emília
 - **CSS Variables**: Sistema reativo de cores em tempo real
 - **Design Glassmorphism**: Backdrop blur e transparências elegantes
 - **Animações Fluidas**: Transições suaves e micro-interações
 - **Responsivo Completo**: Adaptação perfeita para mobile e desktop
 
-### 📱 **PWA (Progressive Web App)**
-- **Instalação Offline**: Funciona sem internet após primeira visita
-- **Service Worker**: Cache inteligente de assets e modelos
-- **App Shortcuts**: Acesso rápido via menu do sistema
-- **Meta Tags Otimizadas**: Suporte completo para dispositivos móveis
-- **Performance**: Lazy loading e code splitting automático
+### 🛠️ **Tecnologias Utilizadas**
+- **React**: Framework para construção da interface
+- **Vite**: Bundler ultrarrápido para desenvolvimento
+- **TensorFlow.js**: IA para reconhecimento de padrões visuais
+- **Tone.js**: Biblioteca de áudio para música gerativa
+- **Tailwind CSS**: Estilização rápida e responsiva
+- **GitHub Pages**: Deploy contínuo e gratuito
+
+### 📂 **Estrutura do Projeto**
+- `src/components/ThemeSelector.jsx`: Componente para seleção de temas
+- `src/components/themes.css`: Estilos para os temas visuais
+- `src/index.css`: Estilos globais e resets
 
 ---
 
