@@ -188,6 +188,7 @@ export default function MemoryGame({ musicPlaying, setMusicPlaying }) {
   const [currentTheme, setCurrentTheme] = useState('sitio')
   const [audioEngine] = useState(() => new MobileAudioEngine())
   const [isPlaying, setIsPlaying] = useState(!!musicPlaying)
+  const [controlsLocked, setControlsLocked] = useState(true) // durante o jogo, apenas cliques nas cartas e toggle de música
   useEffect(() => { setIsPlaying(!!musicPlaying) }, [musicPlaying])
 
   const pairCount = useMemo(() => {
@@ -215,6 +216,7 @@ export default function MemoryGame({ musicPlaying, setMusicPlaying }) {
     setFinished(false)
     setShowCelebration(false)
     setStreak(0)
+  setControlsLocked(true)
     
     // Reset musical para exploração com contexto de dificuldade
     if (window.sitioMusicEngine && (musicPlaying || isPlaying) && audioEngine.dynamicMusicEnabled) {
@@ -287,6 +289,7 @@ export default function MemoryGame({ musicPlaying, setMusicPlaying }) {
             setFinished(true)
             setShowCelebration(true)
             audioEngine?.onGameComplete()
+            setControlsLocked(false)
             
             // Música especial de vitória
             if (window.sitioMusicEngine && (musicPlaying || isPlaying) && audioEngine.dynamicMusicEnabled) {
@@ -349,152 +352,25 @@ export default function MemoryGame({ musicPlaying, setMusicPlaying }) {
       )}
       
       <header className="game-header">
-        <h1 className="game-title text-with-bg" style={{
+        <h1 className="game-title" style={{
           fontSize: '1.8rem',
           fontWeight: '900',
           textAlign: 'center',
-          padding: '1rem',
-          color: 'var(--theme-text, #2F4F2F)',
-          textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
-          backgroundColor: 'rgba(255, 215, 0, 0.9)',
+          padding: '0.75rem 1rem',
+          color: '#000',
+          backgroundColor: 'rgba(255, 215, 0, 0.95)',
           borderRadius: '12px',
           border: '3px solid var(--theme-primary, #FFD700)',
-          marginBottom: '1.5rem'
+          marginBottom: '0.5rem',
+          letterSpacing: '1px'
         }}>
-          🏡 Sítio do Pica-Pau Amarelo - Jogo da Memória
+          SÍTIO DO PICA-PAU IA
         </h1>
-        
-        <div className="difficulty-selector" style={{
-          display: 'flex',
-          justifyContent: 'center',
-          gap: '0.8rem',
-          marginBottom: '1.5rem',
-          flexWrap: 'wrap'
-        }}>
-          {['easy', 'medium', 'hard'].map(level => (
-            <button 
-              key={level}
-              onClick={() => {
-                setDifficulty(level)
-                localStorage.setItem('memoryDifficulty', level)
-              }}
-              className={`difficulty-btn ${difficulty === level ? 'active' : ''}`}
-              aria-label={`Selecionar dificuldade ${level}`}
-              style={{ 
-                minHeight: '48px', 
-                minWidth: '120px',
-                fontSize: '1rem',
-                fontWeight: '700',
-                padding: '0.8rem 1.2rem',
-                borderRadius: '8px',
-                border: '2px solid #000',
-                backgroundColor: difficulty === level ? '#FFD700' : '#FFF',
-                color: '#000',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease',
-                textShadow: 'none'
-              }}
-            >
-              {level === 'easy' ? '🌱 Fácil (6)' : level === 'medium' ? '🌳 Médio (12)' : '🌲 Difícil (24)'}
-            </button>
-          ))}
+        <div style={{ textAlign:'center', marginBottom:'0.75rem', color:'#000', fontWeight:800 }}>
+          Jogo da memória com visão computacional e música procedural (IA)
         </div>
-        
-        <div className="game-controls" style={{
-          display: 'flex',
-          justifyContent: 'center',
-          gap: '0.8rem',
-          marginBottom: '1.5rem',
-          flexWrap: 'wrap'
-        }}>
-          <button onClick={initializeGame} className="control-btn restart-btn" aria-label="Novo jogo" style={{ 
-            minHeight: '48px', 
-            minWidth: '120px',
-            fontSize: '0.95rem',
-            fontWeight: '700',
-            padding: '0.8rem 1rem',
-            borderRadius: '8px',
-            border: '2px solid #000',
-            backgroundColor: '#32CD32',
-            color: '#000',
-            cursor: 'pointer',
-            textShadow: 'none'
-          }}>
-            🔄 Novo Jogo
-          </button>
-          
-          <button onClick={() => audioEngine?.playSitioMelody()} className="control-btn melody-btn" aria-label="Tocar melodia do Sítio" style={{ 
-            minHeight: '48px', 
-            minWidth: '120px',
-            fontSize: '0.95rem',
-            fontWeight: '700',
-            padding: '0.8rem 1rem',
-            borderRadius: '8px',
-            border: '2px solid #000',
-            backgroundColor: '#FF69B4',
-            color: '#000',
-            cursor: 'pointer',
-            textShadow: 'none'
-          }}>
-            🎵 Melodia
-          </button>
-          
-          <button 
-            onClick={() => {
-              const next = !isPlaying
-              setIsPlaying(next)
-              if (typeof setMusicPlaying === 'function') setMusicPlaying(next)
-            }} 
-            className={`control-btn music-btn ${isPlaying ? 'playing' : ''}`}
-            aria-label={isPlaying ? 'Pausar música' : 'Tocar música'}
-            style={{ 
-              minHeight: '48px', 
-              minWidth: '120px',
-              fontSize: '0.95rem',
-              fontWeight: '700',
-              padding: '0.8rem 1rem',
-              borderRadius: '8px',
-              border: '2px solid #000',
-              backgroundColor: isPlaying ? '#FF6347' : '#87CEEB',
-              color: '#000',
-              cursor: 'pointer',
-              textShadow: 'none'
-            }}
-          >
-            {isPlaying ? '🔇 Pausar' : '🎵 Música'}
-          </button>
-
-          <button onClick={() => setShowAudioSettings(!showAudioSettings)} className="control-btn audio-settings-btn" aria-label="Configurações de áudio" style={{ 
-            minHeight: '48px', 
-            minWidth: '100px',
-            fontSize: '0.95rem',
-            fontWeight: '700',
-            padding: '0.8rem 1rem',
-            borderRadius: '8px',
-            border: '2px solid #000',
-            backgroundColor: '#DDA0DD',
-            color: '#000',
-            cursor: 'pointer',
-            textShadow: 'none'
-          }}>
-            🔧 Config
-          </button>
-          
-          <button onClick={() => setShowLeaderboard(true)} className="control-btn leaderboard-btn" aria-label="Abrir ranking" style={{ 
-            minHeight: '48px', 
-            minWidth: '100px',
-            fontSize: '0.95rem',
-            fontWeight: '700',
-            padding: '0.8rem 1rem',
-            borderRadius: '8px',
-            border: '2px solid #000',
-            backgroundColor: '#FFD700',
-            color: '#000',
-            cursor: 'pointer',
-            textShadow: 'none'
-          }}>
-            🏆 Rank
-          </button>
+        <div style={{ textAlign:'center', color:'#000', fontWeight:700, opacity:0.9 }}>
+          Jogue e aprenda com os personagens do Sítio
         </div>
         
         <div className="game-stats" style={{
@@ -558,7 +434,8 @@ export default function MemoryGame({ musicPlaying, setMusicPlaying }) {
         </div>
       </header>
 
-      <div className="grid">
+      <div className="memory-layout">
+        <div className="grid">
         {cards.map((card, index) => (
           <div 
             key={card.uniqueId}
@@ -583,9 +460,78 @@ export default function MemoryGame({ musicPlaying, setMusicPlaying }) {
             </div>
           </div>
         ))}
+        </div>
+
+        {/* Sidebar à direita com controles */}
+        <aside className="side-panel">
+          <div className="difficulty-selector" style={{
+            display: 'flex', flexDirection:'column', alignItems:'stretch', gap:'0.5rem', marginBottom:'1rem'
+          }}>
+            {['easy', 'medium', 'hard'].map(level => (
+              <button
+                key={level}
+                onClick={() => {
+                  if (controlsLocked) return
+                  setDifficulty(level)
+                  localStorage.setItem('memoryDifficulty', level)
+                }}
+                className={`difficulty-btn ${difficulty === level ? 'active' : ''}`}
+                aria-label={`Selecionar dificuldade ${level}`}
+                disabled={controlsLocked}
+                style={{ opacity: controlsLocked ? 0.6 : 1 }}
+              >
+                {level === 'easy' ? '🌱 Fácil (6)' : level === 'medium' ? '🌳 Médio (12)' : '🌲 Difícil (24)'}
+              </button>
+            ))}
+          </div>
+
+          <div className="game-actions" style={{ display:'flex', flexDirection:'column', gap:'0.6rem' }}>
+            <button onClick={initializeGame} className="control-btn restart-btn" aria-label="Novo jogo" disabled={controlsLocked}
+              style={{ opacity: controlsLocked ? 0.6 : 1 }}>
+              🔄 Novo Jogo
+            </button>
+            <button onClick={() => audioEngine?.playSitioMelody()} className="control-btn melody-btn" aria-label="Tocar melodia do Sítio" disabled={controlsLocked}
+              style={{ opacity: controlsLocked ? 0.6 : 1 }}>
+              🎵 Melodia
+            </button>
+            <button 
+              onClick={() => {
+                const next = !isPlaying
+                setIsPlaying(next)
+                if (typeof setMusicPlaying === 'function') setMusicPlaying(next)
+              }} 
+              className={`control-btn music-btn ${isPlaying ? 'playing' : ''}`}
+              aria-label={isPlaying ? 'Pausar música' : 'Tocar música'}
+            >
+              {isPlaying ? '🔇 Pausar Música' : '🎵 Tocar Música'}
+            </button>
+            <button onClick={() => setShowAudioSettings(!showAudioSettings)} className="control-btn audio-settings-btn" aria-label="Configurações de áudio" disabled={controlsLocked}
+              style={{ opacity: controlsLocked ? 0.6 : 1 }}>
+              🔧 Config
+            </button>
+            <button onClick={() => setShowLeaderboard(!showLeaderboard)} className="control-btn leaderboard-btn" aria-label="Abrir ranking" disabled={controlsLocked}
+              style={{ opacity: controlsLocked ? 0.6 : 1 }}>
+              🏆 {showLeaderboard ? 'Ocultar Rank' : 'Ver Rank'}
+            </button>
+            <div style={{ marginTop:'0.5rem' }}>
+              <ThemeSelector currentTheme={currentTheme} onThemeChange={setCurrentTheme} />
+            </div>
+          </div>
+
+          <div className="sidebar-footer" style={{
+            marginTop: 'auto', textAlign:'center', paddingTop:'1rem'
+          }}>
+            <div style={{ color:'#000', fontWeight:900, fontSize:'0.95rem' }}>
+              ✨ Feito com ❤️ por uma equipe mágica do Sítio ✨
+            </div>
+            <div style={{ lineHeight:1.6, color:'#000', fontWeight:700, fontSize:'0.9rem' }}>
+              👩‍🎨 Malie • ⚡ Tauan • 🧙‍♀️ Carla • 👵 Vovó Jane
+            </div>
+          </div>
+        </aside>
       </div>
 
-      {/* Painel de Configurações de Áudio com Alto Contraste */}
+  {/* Painel de Configurações de Áudio com Alto Contraste */}
       {showAudioSettings && (
         <div style={{
           position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, 
@@ -755,23 +701,106 @@ export default function MemoryGame({ musicPlaying, setMusicPlaying }) {
         </div>
       )}
 
-      <div style={{margin: '1.5rem 0', display: 'flex', justifyContent: 'center'}}>
+      {/* Bloco de ações reposicionado abaixo do grid */}
+      <div className="game-actions" style={{
+        display: 'flex',
+        justifyContent: 'center',
+        gap: '0.8rem',
+        margin: '1.5rem 0',
+        flexWrap: 'wrap'
+      }}>
+        <button onClick={initializeGame} className="control-btn restart-btn" aria-label="Novo jogo" style={{ 
+          minHeight: '48px', 
+          minWidth: '120px',
+          fontSize: '0.95rem',
+          fontWeight: '700',
+          padding: '0.8rem 1rem',
+          borderRadius: '8px',
+          border: '2px solid #000',
+          backgroundColor: '#32CD32',
+          color: '#000',
+          cursor: 'pointer',
+          textShadow: 'none'
+        }}>
+          🔄 Novo Jogo
+        </button>
+        
+        <button onClick={() => audioEngine?.playSitioMelody()} className="control-btn melody-btn" aria-label="Tocar melodia do Sítio" style={{ 
+          minHeight: '48px', 
+          minWidth: '120px',
+          fontSize: '0.95rem',
+          fontWeight: '700',
+          padding: '0.8rem 1rem',
+          borderRadius: '8px',
+          border: '2px solid #000',
+          backgroundColor: '#FF69B4',
+          color: '#000',
+          cursor: 'pointer',
+          textShadow: 'none'
+        }}>
+          🎵 Melodia
+        </button>
+        
         <button 
-          onClick={() => setShowLeaderboard(!showLeaderboard)}
-          style={{
-            padding: '1rem 1.5rem',
-            backgroundColor: '#FFD700',
-            color: '#000000',
-            border: '3px solid #000000',
-            borderRadius: '12px',
+          onClick={() => {
+            const next = !isPlaying
+            setIsPlaying(next)
+            if (typeof setMusicPlaying === 'function') setMusicPlaying(next)
+          }} 
+          className={`control-btn music-btn ${isPlaying ? 'playing' : ''}`}
+          aria-label={isPlaying ? 'Pausar música' : 'Tocar música'}
+          style={{ 
+            minHeight: '48px', 
+            minWidth: '120px',
+            fontSize: '0.95rem',
+            fontWeight: '700',
+            padding: '0.8rem 1rem',
+            borderRadius: '8px',
+            border: '2px solid #000',
+            backgroundColor: isPlaying ? '#FF6347' : '#87CEEB',
+            color: '#000',
             cursor: 'pointer',
-            minHeight: '50px',
-            fontWeight: '800',
-            fontSize: '1.1rem',
             textShadow: 'none'
           }}
         >
-          🏆 {showLeaderboard ? 'Ocultar' : 'Ver'} Ranking
+          {isPlaying ? '🔇 Pausar' : '🎵 Música'}
+        </button>
+
+        <button onClick={() => setShowAudioSettings(!showAudioSettings)} className="control-btn audio-settings-btn" aria-label="Configurações de áudio" style={{ 
+          minHeight: '48px', 
+          minWidth: '100px',
+          fontSize: '0.95rem',
+          fontWeight: '700',
+          padding: '0.8rem 1rem',
+          borderRadius: '8px',
+          border: '2px solid #000',
+          backgroundColor: '#DDA0DD',
+          color: '#000',
+          cursor: 'pointer',
+          textShadow: 'none'
+        }}>
+          🔧 Config
+        </button>
+
+        <button 
+          onClick={() => setShowLeaderboard(!showLeaderboard)}
+          className="control-btn leaderboard-btn"
+          aria-label="Abrir ranking"
+          style={{ 
+            minHeight: '48px', 
+            minWidth: '120px',
+            fontSize: '0.95rem',
+            fontWeight: '700',
+            padding: '0.8rem 1rem',
+            borderRadius: '8px',
+            border: '2px solid #000',
+            backgroundColor: '#FFD700',
+            color: '#000',
+            cursor: 'pointer',
+            textShadow: 'none'
+          }}
+        >
+          🏆 {showLeaderboard ? 'Ocultar Rank' : 'Ver Rank'}
         </button>
       </div>
       {showLeaderboard && (
@@ -783,34 +812,6 @@ export default function MemoryGame({ musicPlaying, setMusicPlaying }) {
           streak={streak}
         />
       )}
-      <ThemeSelector currentTheme={currentTheme} onThemeChange={setCurrentTheme} />
-      
-      <footer style={{
-        textAlign: 'center', 
-        margin: '2rem 0', 
-        padding: '2rem 1rem',
-        backgroundColor: '#FFFFFF',
-        border: '3px solid #000000',
-        borderRadius: '12px'
-      }}>
-        <div style={{
-          color: '#000000',
-          fontWeight: '900',
-          fontSize: '1.1rem',
-          margin: '1rem 0',
-          textShadow: 'none'
-        }}>
-          ✨ Feito com ❤️ por uma equipe mágica do Sítio ✨
-        </div>
-        <div style={{
-          lineHeight: '1.8',
-          color: '#000000',
-          fontWeight: '700',
-          fontSize: '1rem'
-        }}>
-          👩‍🎨 Malie (Artista) • ⚡ Tauan (Mago) • 🧙‍♀️ Carla (Feiticeira) • 👵 Vovó Jane (Sábia)
-        </div>
-      </footer>
     </div>
   )
 }

@@ -79,6 +79,9 @@ body {
 /* Evitar overscroll e rubber-band */
 html, body { 
   overscroll-behavior: none; 
+  height: 100%;
+  max-height: 100vh;
+  overflow: hidden; /* evita rolagem */
 }
 
 /* Contraste extremo para modo claro */
