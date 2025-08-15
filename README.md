@@ -1,4 +1,4 @@
-# 🏡 Sítio do Pica-Pau IA
+# 🏡 Sítio do Pica### **3 Níveis de Dificuldade**: Fácil (6 cartas), Médio (12 cartas), Difícil (12 cartas únicas)Pau IA
 
 ![Vite](https://img.shields.io/badge/Bundler-Vite-646CFF?style=for-the-badge&logo=vite)
 ![React](https://img.shields.io/badge/Frontend-React-61DAFB?style=for-the-badge&logo=react)
@@ -31,8 +31,9 @@
 
 ### 🎵 **Sistema Áudio Interativo**
 - **Música Gerativa**: Melodias procedurais com Tone.js
-- **Visualizador de Áudio**: 12 barras em tempo real do microfone
-- **Feedback Sonoro**: Tons diferentes para match/miss
+- **Compatibilidade iOS/Mobile**: HTML5 Audio fallback para dispositivos Apple
+- **Inicialização Inteligente**: Múltiplas estratégias para ativação de áudio móvel
+- **Feedback Sonoro**: Tons diferentes para match/miss/streak
 - **Trilha Temática**: Snippet especial ao completar jogos
 - **Efeitos Profissionais**: Reverb, delay e síntese avançada
 
