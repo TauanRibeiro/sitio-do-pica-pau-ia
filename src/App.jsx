@@ -83,9 +83,22 @@ function App() {
     }
   }, [view])
 
+  // Navegação via evento do jogo
+  useEffect(() => {
+    const handler = (e) => {
+      const next = e?.detail
+      if (next === 'vision') setView('vision')
+      if (next === 'game') setView('game')
+    }
+    window.addEventListener('sitio:navigate', handler)
+    return () => window.removeEventListener('sitio:navigate', handler)
+  }, [])
+
   // AI via Web Worker (init and messages)
   const aiWorkerRef = useRef(null)
   const [aiReady, setAiReady] = useState(false)
+  const [lowLight, setLowLight] = useState(false)
+  const lowLightRef = useRef(0)
   useEffect(() => {
     if (!useAI || aiReady) return
     // Ensure the worker path works in production (GitHub Pages subpath)
@@ -122,6 +135,7 @@ function App() {
     if (!cameraActive) return
     let rafId = null
     let lastEmbedding = 0
+  let lowLightCounter = lowLightRef.current || 0
     const step = () => {
       const video = videoRef.current
       const canvas = canvasRef.current
@@ -136,6 +150,19 @@ function App() {
           if (flipCamera) { ctx.scale(-1, 1); ctx.translate(-canvas.width, 0) }
           ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
           ctx.restore()
+          // Dica de baixa iluminação
+          try {
+            const s = 16
+            const img = ctx.getImageData(Math.max(0, Math.floor(canvas.width/2 - s/2)), Math.max(0, Math.floor(canvas.height/2 - s/2)), s, s)
+            let sum = 0
+            for (let i=0;i<img.data.length;i+=4) sum += img.data[i] + img.data[i+1] + img.data[i+2]
+            const avg = sum / (img.data.length/4) / 3
+            if (avg < 40) lowLightCounter = Math.min(lowLightCounter+1, 60)
+            else lowLightCounter = Math.max(lowLightCounter-1, 0)
+            if (lowLightCounter > 12 && !lowLight) setLowLight(true)
+            if (lowLightCounter < 6 && lowLight) setLowLight(false)
+            lowLightRef.current = lowLightCounter
+          } catch {}
           // Periodically run AI similarity on center crop
           const now = performance.now()
           if (useAI && aiWorkerRef.current && aiReady && now - lastEmbedding > 350) {
@@ -783,7 +810,7 @@ function App() {
   // UI
   return (
     <div className="min-h-screen bg-gradient-to-br from-[var(--theme-background,#FFF8DC)] via-[var(--theme-background,#FFF8DC)] to-[var(--theme-secondary,#8B4513)]/10 font-sans antialiased">
-      <ThemeSelector />
+      {/* ThemeSelector está disponível dentro do jogo; removido daqui para evitar redundância */}
       <div className="fixed inset-0 bg-[url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Cpath d=%22M10 10h80v80H10z%22 fill=%22none%22 stroke=%22%23FFD700%22 stroke-width=%220.5%22 opacity=%220.1%22/%3E%3C/svg%3E')] pointer-events-none" />
       
       {/* Header */}
@@ -824,23 +851,26 @@ function App() {
               >
                 📷 Câmera
               </button>
-              <button 
-                className={`px-4 py-2.5 rounded-xl font-bold text-sm transition-all transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary,#FFD700)]/50 ${
-                  musicPlaying 
-                    ? 'bg-red-500 text-white shadow-lg animate-pulse' 
-                    : 'bg-[var(--theme-secondary,#8B4513)] text-white hover:brightness-110'
-                }`} 
-                onClick={() => setMusicPlaying(!musicPlaying)}
-              >
-                {musicPlaying ? '🔇 Pausar' : '🎵 Música'}
-              </button>
+              {view !== 'game' && (
+                <button 
+                  className={`px-4 py-2.5 rounded-xl font-bold text-sm transition-all transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary,#FFD700)]/50 ${
+                    musicPlaying 
+                      ? 'bg-red-500 text-white shadow-lg animate-pulse' 
+                      : 'bg-[var(--theme-secondary,#8B4513)] text-white hover:brightness-110'
+                  }`} 
+                  onClick={() => setMusicPlaying(!musicPlaying)}
+                >
+                  {musicPlaying ? '🔇 Pausar' : '🎵 Música'}
+                </button>
+              )}
             </nav>
           </div>
         </div>
       </header>
 
       {/* Hero */}
-      <section className="relative isolate">
+  {view !== 'game' && (
+  <section className="relative isolate">
         <div className="absolute inset-0 -z-10 bg-gradient-to-br from-[var(--theme-primary,#FFD700)]/20 via-[var(--theme-secondary,#8B4513)]/10 to-[var(--theme-accent,#FF4500)]/20" />
         <div className="mx-auto max-w-6xl px-4 py-8 sm:py-12">
           <div className="grid lg:grid-cols-2 gap-6 items-center">
@@ -850,7 +880,6 @@ function App() {
               <div className="mt-5 flex flex-wrap gap-3">
                 <button className="px-5 py-3 rounded-2xl bg-gradient-to-r from-[var(--theme-primary,#FFD700)] to-[var(--theme-accent,#FF4500)] text-[var(--theme-text,#2F4F2F)] font-bold shadow-lg transform hover:scale-105 transition-all focus:outline-none focus-visible:ring-2 ring-[var(--theme-primary,#FFD700)]/50" onClick={() => setView('game')}>🎮 Jogar agora</button>
                 <button className="px-5 py-3 rounded-2xl bg-white/10 backdrop-blur-sm text-[var(--theme-text,#2F4F2F)] font-semibold hover:bg-white/20 border border-[var(--theme-primary,#FFD700)]/30 transition-all focus:outline-none focus-visible:ring-2 ring-[var(--theme-primary,#FFD700)]/50" onClick={() => setView('vision')}>📷 Modo câmera</button>
-                <button className={`px-5 py-3 rounded-2xl ${musicPlaying?'bg-red-500 text-white animate-pulse':'bg-[var(--theme-secondary,#8B4513)] text-white hover:brightness-110'} font-semibold shadow-lg transition-all focus:outline-none focus-visible:ring-2 ring-[var(--theme-primary,#FFD700)]/50`} onClick={() => setMusicPlaying(!musicPlaying)}>{musicPlaying ? '🔇 Parar música' : '🎵 Tocar música'}</button>
               </div>
             </div>
             <div className="relative">
@@ -867,10 +896,11 @@ function App() {
             </div>
           </div>
         </div>
-      </section>
+  </section>
+  )}
 
       {/* Vision controls */}
-      {view === 'vision' && (
+  {view === 'vision' && (
         <div className="mx-auto max-w-5xl px-4 py-4 bg-white/30 rounded-2xl backdrop-blur-md border border-[var(--theme-primary,#FFD700)]/30 mb-4">
           <div className="flex flex-wrap gap-3 items-center">
             <button className={`px-4 py-2.5 rounded-xl font-semibold transition-all ${cameraActive?'bg-red-500 text-white shadow-lg':'bg-[var(--theme-primary,#FFD700)] text-[var(--theme-text,#2F4F2F)] hover:brightness-110'} focus:outline-none focus-visible:ring-2 ring-[var(--theme-primary,#FFD700)]/50`} onClick={() => setCameraActive(!cameraActive)}>
@@ -915,16 +945,32 @@ function App() {
         {view === 'vision' && (
           cameraActive ? (
             <div className="camera-view mx-auto max-w-3xl bg-white/30 backdrop-blur-md border border-[var(--theme-primary,#FFD700)]/30 rounded-2xl p-4 shadow-xl">
-              <video ref={videoRef} autoPlay playsInline width={480} height={360} style={{ borderRadius: '1rem', boxShadow: '0 2px 12px rgba(0,0,0,0.25)', marginBottom: '0.5rem' }} />
+              <div style={{ position:'relative' }}>
+                <video ref={videoRef} autoPlay playsInline width={480} height={360} style={{ borderRadius: '1rem', boxShadow: '0 2px 12px rgba(0,0,0,0.25)', marginBottom: '0.5rem' }} />
+                {/* Moldura fantasma para orientar centralização */}
+                <div style={{ position:'absolute', top:'50%', left:'50%', transform:'translate(-50%,-50%)', width: 220, height: 160, border:'3px dashed rgba(255,215,0,0.7)', borderRadius:'12px', pointerEvents:'none' }} />
+              </div>
               <canvas ref={canvasRef} width={480} height={360} style={{ display: 'block', margin: '0.5rem auto', borderRadius: '0.5rem' }} />
+              {/* Aviso de pouca luz */}
+              <div id="lowLightHint" style={{ display:'none' }} />
+              {lowLight && (
+                <div style={{
+                  background:'#FFD700', color:'#000', border:'3px solid #000', borderRadius:'10px',
+                  padding:'0.5rem 0.75rem', fontWeight:900, textAlign:'center', margin:'0.5rem auto'
+                }}>
+                  💡 Está um pouco escuro. Aproxime a carta e use um ambiente mais iluminado.
+                </div>
+              )}
               <div style={{ display: 'flex', gap: '.5rem', justifyContent: 'center', flexWrap: 'wrap' }}>
                 <button onClick={captureTemplate} className="small-btn">Capturar Template</button>
                 <button onClick={takeSnapshot} className="small-btn">Tirar Foto</button>
                 <button onClick={() => { templatesRef.current = []; setSnapshots([]); alert('Templates e fotos limpos') }} className="small-btn">Limpar Tudo</button>
+                <a href="./printable-cards.html" target="_blank" rel="noopener" className="small-btn">📄 Cartas imprimíveis</a>
               </div>
               <p style={{ fontWeight: 700, textShadow: '0 2px 6px rgba(0,0,0,.35)' }}>
                 Cartas detectadas: {detectedCards.length > 0 ? detectedCards.join(', ') : 'Nenhuma'} | AI: {aiReady ? 'Pronto ✅' : 'Carregando ⏳'}
               </p>
+              {/* lowLight controlado por estado React */}
               {snapshots.length > 0 && (
                 <div style={{ marginTop: '1rem' }}>
                   <h4 style={{ fontWeight: 700, textShadow: '0 2px 6px rgba(0,0,0,.35)' }}>Últimas Fotos:</h4>

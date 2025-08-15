@@ -189,6 +189,9 @@ export default function MemoryGame({ musicPlaying, setMusicPlaying }) {
   const [audioEngine] = useState(() => new MobileAudioEngine())
   const [isPlaying, setIsPlaying] = useState(!!musicPlaying)
   const [controlsLocked, setControlsLocked] = useState(true) // durante o jogo, apenas cliques nas cartas e toggle de música
+  const [showOnboarding, setShowOnboarding] = useState(true)
+  const [paused, setPaused] = useState(false)
+  const [ttsEnabled, setTtsEnabled] = useState(false)
   useEffect(() => { setIsPlaying(!!musicPlaying) }, [musicPlaying])
 
   const pairCount = useMemo(() => {
@@ -217,6 +220,8 @@ export default function MemoryGame({ musicPlaying, setMusicPlaying }) {
     setShowCelebration(false)
     setStreak(0)
   setControlsLocked(true)
+  setShowOnboarding(true)
+  setPaused(false)
     
     // Reset musical para exploração com contexto de dificuldade
     if (window.sitioMusicEngine && (musicPlaying || isPlaying) && audioEngine.dynamicMusicEnabled) {
@@ -241,12 +246,42 @@ export default function MemoryGame({ musicPlaying, setMusicPlaying }) {
     }
   }, [initializeGame, difficulty, musicPlaying, isPlaying])
 
+  // Esconde onboarding após 2 jogadas
+  useEffect(() => {
+    if (moves >= 2 && showOnboarding) setShowOnboarding(false)
+  }, [moves, showOnboarding])
+
+  // Atalho de pausa com tecla "P"
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key && e.key.toLowerCase() === 'p') {
+        setPaused(p => !p)
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
+
+  const speak = useCallback((text) => {
+    try {
+      if (!ttsEnabled) return
+      if (!('speechSynthesis' in window)) return
+      const utter = new SpeechSynthesisUtterance(text)
+      utter.lang = 'pt-BR'
+      utter.rate = 1
+      window.speechSynthesis.cancel()
+      window.speechSynthesis.speak(utter)
+    } catch {}
+  }, [ttsEnabled])
+
   const handleCardClick = useCallback((cardIndex) => {
-    if (flipped.length >= 2 || flipped.includes(cardIndex) || matched.includes(cardIndex) || finished) {
+  if (paused || flipped.length >= 2 || flipped.includes(cardIndex) || matched.includes(cardIndex) || finished) {
       return
     }
 
     audioEngine?.onCardFlip()
+  const card = cards[cardIndex]
+  if (card?.name) speak(card.name)
     const newFlipped = [...flipped, cardIndex]
     setFlipped(newFlipped)
     setMoves(prev => prev + 1)
@@ -259,6 +294,7 @@ export default function MemoryGame({ musicPlaying, setMusicPlaying }) {
       setTimeout(() => {
         if (firstCard.name === secondCard.name) {
           audioEngine?.onCardMatch()
+          speak(`Par! ${firstCard.name}`)
           const newMatched = [...matched, firstIndex, secondIndex]
           setMatched(newMatched)
           setScore(prev => prev + 50)
@@ -290,6 +326,7 @@ export default function MemoryGame({ musicPlaying, setMusicPlaying }) {
             setShowCelebration(true)
             audioEngine?.onGameComplete()
             setControlsLocked(false)
+            speak('Você venceu!')
             
             // Música especial de vitória
             if (window.sitioMusicEngine && (musicPlaying || isPlaying) && audioEngine.dynamicMusicEnabled) {
@@ -314,6 +351,7 @@ export default function MemoryGame({ musicPlaying, setMusicPlaying }) {
           }
         } else {
           audioEngine?.onCardMiss()
+          speak('Tente novamente')
           setScore(prev => Math.max(0, prev - 10))
           if (streak > 0) audioEngine?.onComboBreak()
           setStreak(0)
@@ -347,6 +385,24 @@ export default function MemoryGame({ musicPlaying, setMusicPlaying }) {
         <div className="celebration-overlay">
           <div className="celebration-text">
             🎉 Parabéns! Você encontrou todos os personagens do Sítio! 🏆
+          </div>
+        </div>
+      )}
+      {showOnboarding && (
+        <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.6)', zIndex:1000, display:'flex', alignItems:'center', justifyContent:'center' }} onClick={() => setShowOnboarding(false)}>
+          <div style={{ background:'#fff', color:'#000', border:'4px solid #000', borderRadius:16, padding:'1rem 1.25rem', maxWidth:420, textAlign:'center', fontWeight:800 }}>
+            <div style={{ fontSize:'1.25rem', marginBottom:'0.5rem' }}>👉 Toque nas cartas para começar!</div>
+            <div style={{ fontSize:'0.95rem' }}>A música do Sítio vai crescendo com seus acertos. Clique para continuar.</div>
+          </div>
+        </div>
+      )}
+      {paused && (
+        <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.7)', zIndex:1000, display:'flex', alignItems:'center', justifyContent:'center' }}>
+          <div style={{ background:'#fff', color:'#000', border:'4px solid #000', borderRadius:16, padding:'1rem 1.25rem', maxWidth:420, textAlign:'center', fontWeight:900 }}>
+            ⏸️ Pausado
+            <div style={{ marginTop:'0.75rem' }}>
+              <button className="control-btn" onClick={() => setPaused(false)}>▶️ Retomar</button>
+            </div>
           </div>
         </div>
       )}
@@ -490,10 +546,6 @@ export default function MemoryGame({ musicPlaying, setMusicPlaying }) {
               style={{ opacity: controlsLocked ? 0.6 : 1 }}>
               🔄 Novo Jogo
             </button>
-            <button onClick={() => audioEngine?.playSitioMelody()} className="control-btn melody-btn" aria-label="Tocar melodia do Sítio" disabled={controlsLocked}
-              style={{ opacity: controlsLocked ? 0.6 : 1 }}>
-              🎵 Melodia
-            </button>
             <button 
               onClick={() => {
                 const next = !isPlaying
@@ -505,6 +557,9 @@ export default function MemoryGame({ musicPlaying, setMusicPlaying }) {
             >
               {isPlaying ? '🔇 Pausar Música' : '🎵 Tocar Música'}
             </button>
+            <button onClick={() => setTtsEnabled(v => !v)} className="control-btn" aria-label="Narrador por voz">
+              {ttsEnabled ? '�️ Narrador: Ligado' : '🗣️ Narrador: Desligado'}
+            </button>
             <button onClick={() => setShowAudioSettings(!showAudioSettings)} className="control-btn audio-settings-btn" aria-label="Configurações de áudio" disabled={controlsLocked}
               style={{ opacity: controlsLocked ? 0.6 : 1 }}>
               🔧 Config
@@ -512,6 +567,9 @@ export default function MemoryGame({ musicPlaying, setMusicPlaying }) {
             <button onClick={() => setShowLeaderboard(!showLeaderboard)} className="control-btn leaderboard-btn" aria-label="Abrir ranking" disabled={controlsLocked}
               style={{ opacity: controlsLocked ? 0.6 : 1 }}>
               🏆 {showLeaderboard ? 'Ocultar Rank' : 'Ver Rank'}
+            </button>
+            <button onClick={() => { try { window.dispatchEvent(new CustomEvent('sitio:navigate', { detail: 'vision' })) } catch {} }} className="control-btn" aria-label="Ir para modo câmera" disabled={controlsLocked} style={{ opacity: controlsLocked ? 0.6 : 1 }}>
+              📷 Modo câmera
             </button>
             <div style={{ marginTop:'0.5rem' }}>
               <ThemeSelector currentTheme={currentTheme} onThemeChange={setCurrentTheme} />
