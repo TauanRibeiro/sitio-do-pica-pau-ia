@@ -1,7 +1,7 @@
 ﻿import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import './memory.css'
 import './themes.css'
-import ThemeSelector from './ThemeSelector'
+import ThemeSelector from './ThemeSelectorClean'
 import Leaderboard from './Leaderboard'
 
 class MobileAudioEngine {
@@ -95,9 +95,9 @@ class MobileAudioEngine {
     this.vibrate([50, 30, 50]) // padrão de sucesso
   }
   onCardMiss() { 
-  // short descending sweep
-  this.playSweep(900, 280, 0.2, 0.08, 'triangle')
-  this.vibrate([100]) // vibração mais longa para erro
+    // short descending sweep
+    this.playSweep(900, 280, 0.2, 0.08, 'triangle')
+    this.vibrate([100]) // vibração mais longa para erro
   }
   onGameComplete() { 
     [800, 1000, 1200, 1400, 1600].forEach((freq, i) => {
@@ -188,7 +188,7 @@ export default function MemoryGame({ musicPlaying, setMusicPlaying }) {
   const [currentTheme, setCurrentTheme] = useState('sitio')
   const [audioEngine] = useState(() => new MobileAudioEngine())
   const [isPlaying, setIsPlaying] = useState(!!musicPlaying)
-  const [controlsLocked, setControlsLocked] = useState(true) // durante o jogo, apenas cliques nas cartas e toggle de música
+  const [controlsLocked, setControlsLocked] = useState(false) // liberado antes do início; bloqueia após primeiro clique
   const [showOnboarding, setShowOnboarding] = useState(true)
   const [paused, setPaused] = useState(false)
   const [ttsEnabled, setTtsEnabled] = useState(false)
@@ -219,7 +219,7 @@ export default function MemoryGame({ musicPlaying, setMusicPlaying }) {
     setFinished(false)
     setShowCelebration(false)
     setStreak(0)
-  setControlsLocked(true)
+  setControlsLocked(false)
   setShowOnboarding(true)
   setPaused(false)
     
@@ -278,6 +278,8 @@ export default function MemoryGame({ musicPlaying, setMusicPlaying }) {
   if (paused || flipped.length >= 2 || flipped.includes(cardIndex) || matched.includes(cardIndex) || finished) {
       return
     }
+    // Primeiro clique de uma rodada: bloqueia controles (exceto música)
+    if (!controlsLocked) setControlsLocked(true)
 
     audioEngine?.onCardFlip()
   const card = cards[cardIndex]
@@ -389,7 +391,7 @@ export default function MemoryGame({ musicPlaying, setMusicPlaying }) {
         </div>
       )}
       {showOnboarding && (
-        <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.6)', zIndex:1000, display:'flex', alignItems:'center', justifyContent:'center' }} onClick={() => setShowOnboarding(false)}>
+        <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.6)', zIndex:1000, display:'flex', alignItems:'center', justifyContent:'center' }} onClick={() => { setShowOnboarding(false); speak('Toque nas cartas para começar. A música cresce a cada acerto.'); }}>
           <div style={{ background:'#fff', color:'#000', border:'4px solid #000', borderRadius:16, padding:'1rem 1.25rem', maxWidth:420, textAlign:'center', fontWeight:800 }}>
             <div style={{ fontSize:'1.25rem', marginBottom:'0.5rem' }}>👉 Toque nas cartas para começar!</div>
             <div style={{ fontSize:'0.95rem' }}>A música do Sítio vai crescendo com seus acertos. Clique para continuar.</div>
@@ -546,11 +548,12 @@ export default function MemoryGame({ musicPlaying, setMusicPlaying }) {
               style={{ opacity: controlsLocked ? 0.6 : 1 }}>
               🔄 Novo Jogo
             </button>
-            <button 
+      <button 
               onClick={() => {
                 const next = !isPlaying
                 setIsPlaying(next)
                 if (typeof setMusicPlaying === 'function') setMusicPlaying(next)
+        try { audioEngine?.vibrate([30]) } catch {}
               }} 
               className={`control-btn music-btn ${isPlaying ? 'playing' : ''}`}
               aria-label={isPlaying ? 'Pausar música' : 'Tocar música'}

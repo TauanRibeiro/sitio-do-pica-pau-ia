@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect, Suspense, lazy } from 'react'
 import './App.css'
 import './utils/achievements'
-import ThemeSelector from './components/ThemeSelector'
 
 const MemoryGame = lazy(() => import('./components/MemoryGame'))
 
@@ -128,6 +127,8 @@ function App() {
           break
       }
     }
+  // Dispara inicialização da IA
+  try { aiWorkerRef.current.postMessage({ type: 'INIT_AI' }) } catch {}
   }, [cameraActive, useAI, aiReady])
 
   // Draw video to canvas and periodically ask AI worker to compare similarity
