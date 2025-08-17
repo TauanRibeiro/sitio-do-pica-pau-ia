@@ -406,7 +406,6 @@ export default function MemoryGame({ musicPlaying, setMusicPlaying }) {
       
       <header className="game-header">
         <h1 className="game-title">SÍTIO DO PICA-PAU IA</h1>
-        <p>Jogo da memória com música e visão computacional</p>
       </header>
 
       <div className="memory-layout">
@@ -433,6 +432,31 @@ export default function MemoryGame({ musicPlaying, setMusicPlaying }) {
 
         <aside className="side-panel">
           <h3>Painel de Controle</h3>
+          
+          <h4>Navegação</h4>
+          <div className="navigation-controls">
+            <button 
+              className="control-btn primary-btn" 
+              onClick={() => window.dispatchEvent(new CustomEvent('sitio:navigate', { detail: 'game' }))}
+            >
+              🎮 Jogar Agora
+            </button>
+            <button 
+              className="control-btn secondary-btn" 
+              onClick={() => window.dispatchEvent(new CustomEvent('sitio:navigate', { detail: 'vision' }))}
+            >
+              📷 Modo Câmera
+            </button>
+            <button 
+              className={`control-btn music-btn ${isPlaying ? 'playing' : ''}`} 
+              onClick={() => {
+                audioEngine?.vibrate([30]);
+                setMusicPlaying(p => !p);
+              }}
+            >
+              {isPlaying ? '❚❚ Pausar Música' : '▶️ Tocar Música'}
+            </button>
+          </div>
           
           <h4>Estatísticas</h4>
           <div className="game-stats">
@@ -468,15 +492,6 @@ export default function MemoryGame({ musicPlaying, setMusicPlaying }) {
           
           <div className="game-footer">
             <ThemeSelector onThemeChange={setCurrentTheme} currentTheme={currentTheme} disabled={controlsLocked} />
-            <button 
-              className={`control-btn music-btn ${isPlaying ? 'playing' : ''}`} 
-              onClick={() => {
-                audioEngine?.vibrate([30]);
-                setMusicPlaying(p => !p);
-              }}
-            >
-              {isPlaying ? '❚❚ Pausar Música' : '▶️ Tocar Música'}
-            </button>
           </div>
         </aside>
       </div>

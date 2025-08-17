@@ -54,6 +54,19 @@
   /* As colunas são definidas pela dificuldade */
 }
 
+/* Tamanhos de cartas ajustados por dificuldade */
+.difficulty-easy {
+  --card-size: 140px;
+}
+
+.difficulty-medium {
+  --card-size: 120px;
+}
+
+.difficulty-hard {
+  --card-size: 100px;
+}
+
 .difficulty-easy .grid {
   grid-template-columns: repeat(3, var(--card-size));
 }
@@ -104,7 +117,8 @@
 
 .side-panel .game-stats,
 .side-panel .difficulty-selector,
-.side-panel .game-controls {
+.side-panel .game-controls,
+.side-panel .navigation-controls {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
@@ -129,9 +143,29 @@
 
 .side-panel .difficulty-selector .difficulty-btn,
 .side-panel .game-controls .control-btn,
+.side-panel .navigation-controls .control-btn,
 .side-panel .game-footer .control-btn {
   width: 100%;
   justify-content: center;
+  padding: 0.75rem;
+  border: 2px solid #000;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: #ffffff;
+  color: #000;
+}
+
+.primary-btn {
+  background: linear-gradient(135deg, #FFD700 0%, #FF4500 100%) !important;
+  color: #2F4F2F !important;
+  font-weight: 800 !important;
+}
+
+.secondary-btn {
+  background: linear-gradient(135deg, #8B4513 0%, #A0522D 100%) !important;
+  color: #FFFFFF !important;
 }
 
 .game-footer {
@@ -346,6 +380,18 @@
     position: static; /* Remove o sticky para fluir com o conteúdo */
     margin-top: 1.5rem;
   }
+  
+  /* Ajustes de tamanho para tablet */
+  .difficulty-easy {
+    --card-size: 120px;
+  }
+  .difficulty-medium {
+    --card-size: 100px;
+  }
+  .difficulty-hard {
+    --card-size: 85px;
+  }
+  
   .difficulty-medium .grid {
     grid-template-columns: repeat(3, var(--card-size));
   }
@@ -355,16 +401,43 @@
 }
 
 @media (max-width: 768px) {
-  .memory-container { --card-size: 110px; }
+  /* Ajustes para mobile */
+  .difficulty-easy {
+    --card-size: 110px;
+  }
+  .difficulty-medium {
+    --card-size: 90px;
+  }
+  .difficulty-hard {
+    --card-size: 75px;
+  }
+  
   .difficulty-hard .grid {
     grid-template-columns: repeat(3, var(--card-size));
   }
 }
 
 @media (max-width: 480px) {
-  .memory-container { --card-size: 90px; padding: 0.5rem; }
-  .game-header .game-title { font-size: 1.5rem; }
-  .grid { gap: 0.5rem; }
+  /* Ajustes para telas muito pequenas */
+  .difficulty-easy {
+    --card-size: 90px;
+  }
+  .difficulty-medium {
+    --card-size: 75px;
+  }
+  .difficulty-hard {
+    --card-size: 65px;
+  }
+  
+  .memory-container { 
+    padding: 0.5rem; 
+  }
+  .game-header .game-title { 
+    font-size: 1.5rem; 
+  }
+  .grid { 
+    gap: 0.5rem; 
+  }
 }
 
 /* Estilos de botões que faltaram */

@@ -869,7 +869,7 @@ function App() {
         </div>
       </header>
 
-      {/* Hero */}
+      {/* Hero - removido quando está no game */}
   {view !== 'game' && (
   <section className="relative isolate">
         <div className="absolute inset-0 -z-10 bg-gradient-to-br from-[var(--theme-primary,#FFD700)]/20 via-[var(--theme-secondary,#8B4513)]/10 to-[var(--theme-accent,#FF4500)]/20" />
@@ -898,9 +898,7 @@ function App() {
           </div>
         </div>
   </section>
-  )}
-
-      {/* Vision controls */}
+      )}      {/* Vision controls */}
   {view === 'vision' && (
         <div className="mx-auto max-w-5xl px-4 py-4 bg-white/30 rounded-2xl backdrop-blur-md border border-[var(--theme-primary,#FFD700)]/30 mb-4">
           <div className="flex flex-wrap gap-3 items-center">
@@ -990,6 +988,38 @@ function App() {
           )
         )}
       </div>
+      
+      {/* Seção de controles adicionais antes do footer */}
+      {view !== 'game' && (
+        <section className="relative mt-8 mb-8">
+          <div className="mx-auto max-w-6xl px-4">
+            <div className="bg-gradient-to-br from-[var(--theme-primary,#FFD700)]/10 to-[var(--theme-secondary,#8B4513)]/10 backdrop-blur-md rounded-3xl border border-[var(--theme-primary,#FFD700)]/20 p-6 shadow-xl">
+              <h3 className="text-2xl font-bold text-[var(--theme-text,#2F4F2F)] text-center mb-4">🎛️ Controles Avançados</h3>
+              <div className="flex flex-wrap gap-4 justify-center">
+                <button 
+                  className="px-4 py-2 rounded-xl bg-[var(--theme-primary,#FFD700)] text-[var(--theme-text,#2F4F2F)] font-semibold hover:bg-[var(--theme-accent,#FF4500)] transition-all"
+                  onClick={() => setMusicPlaying(p => !p)}
+                >
+                  {musicPlaying ? '🔇 Parar Música' : '🎵 Iniciar Música'}
+                </button>
+                <button 
+                  className="px-4 py-2 rounded-xl bg-[var(--theme-secondary,#8B4513)] text-white font-semibold hover:bg-[var(--theme-accent,#FF4500)] transition-all"
+                  onClick={() => setUseAI(p => !p)}
+                >
+                  {useAI ? '🤖 IA Ativada' : '🔧 IA Desativada'}
+                </button>
+                <button 
+                  className="px-4 py-2 rounded-xl bg-white/20 backdrop-blur-sm text-[var(--theme-text,#2F4F2F)] font-semibold hover:bg-white/30 border border-[var(--theme-primary,#FFD700)]/30 transition-all"
+                  onClick={() => alert('Funcionalidades em desenvolvimento!')}
+                >
+                  ⚙️ Configurações
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+      
       <footer className="relative mt-2 border-t border-[var(--theme-primary,#FFD700)]/30">
         <div className="mx-auto max-w-5xl px-4 py-6 text-[var(--theme-text,#2F4F2F)] text-sm flex flex-wrap items-center justify-between gap-2">
           <span className="inline-flex items-center gap-2 font-semibold"><span className="h-2.5 w-2.5 rounded-full bg-[var(--theme-primary,#FFD700)] shadow-sm" /> 👩‍🎨 Malie • ⚡ Tauan • 🧙‍♀️ Carla • 👵 Vovó Jane</span>
