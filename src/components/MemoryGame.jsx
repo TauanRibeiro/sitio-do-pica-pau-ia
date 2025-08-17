@@ -37,7 +37,7 @@ class MobileAudioEngine {
         await this.audioContext.resume()
       }
       this.isInitialized = true
-    } catch (error) {
+  } catch {
       this.isInitialized = false
     }
   }
@@ -56,7 +56,7 @@ class MobileAudioEngine {
       gainNode.gain.exponentialRampToValueAtTime(0.001, this.audioContext.currentTime + duration)
       oscillator.start(this.audioContext.currentTime)
       oscillator.stop(this.audioContext.currentTime + duration)
-    } catch (error) {}
+  } catch { /* noop */ }
   }
 
   playSweep(startFreq, endFreq, duration = 0.18, volume = 0.08, type = 'sine') {
@@ -74,7 +74,7 @@ class MobileAudioEngine {
       gain.connect(this.audioContext.destination)
       osc.start()
       osc.stop(this.audioContext.currentTime + duration)
-    } catch {}
+  } catch { /* noop */ }
   }
 
   // Feedback háptico para mobile
@@ -172,19 +172,18 @@ function shuffle(array) {
   return arr
 }
 
-export default function MemoryGame({ musicPlaying, setMusicPlaying }) {
+export default function MemoryGame({ musicPlaying }) {
   const [cards, setCards] = useState([])
   const [flipped, setFlipped] = useState([])
   const [matched, setMatched] = useState([])
   const [score, setScore] = useState(0)
   const [finished, setFinished] = useState(false)
-  const [difficulty, setDifficulty] = useState(() => localStorage.getItem('memoryDifficulty') || 'easy')
+  const [difficulty] = useState(() => localStorage.getItem('memoryDifficulty') || 'easy')
   const [moves, setMoves] = useState(0)
   const [showCelebration, setShowCelebration] = useState(false)
   const [showLeaderboard, setShowLeaderboard] = useState(false)
   const [showAudioSettings, setShowAudioSettings] = useState(false)
   const [streak, setStreak] = useState(0)
-  const [currentTheme, setCurrentTheme] = useState('sitio')
   const [audioEngine] = useState(() => new MobileAudioEngine())
   const [isPlaying, setIsPlaying] = useState(!!musicPlaying)
   const [controlsLocked, setControlsLocked] = useState(false) // liberado antes do início; bloqueia após primeiro clique
@@ -196,7 +195,6 @@ export default function MemoryGame({ musicPlaying, setMusicPlaying }) {
   const timerRef = useRef(null)
   const [finalScore, setFinalScore] = useState(null)
   const [gridCols, setGridCols] = useState(3)
-  const [gridRows, setGridRows] = useState(2)
   const [cardPx, setCardPx] = useState(120)
   useEffect(() => { setIsPlaying(!!musicPlaying) }, [musicPlaying])
 
@@ -209,6 +207,7 @@ export default function MemoryGame({ musicPlaying, setMusicPlaying }) {
     }
   }, [difficulty])
 
+  // initializeGame doesn't use `score` in its closure; keep deps minimal to avoid unnecessary re-renders
   const initializeGame = useCallback(() => {
     const selectedChars = shuffle(ALL_CHARACTERS).slice(0, pairCount)
     const gameCards = shuffle([...selectedChars, ...selectedChars]).map((char, index) => ({
@@ -240,22 +239,20 @@ export default function MemoryGame({ musicPlaying, setMusicPlaying }) {
     if (window.sitioMusicEngine && (musicPlaying || isPlaying) && audioEngine.dynamicMusicEnabled) {
       try { 
         window.sitioMusicEngine.start('reset', { difficulty })
-      } catch {}
+      } catch { /* noop */ }
     }
   }, [pairCount, difficulty, musicPlaying, isPlaying, audioEngine])
 
   useEffect(() => {
     // ensure theme is applied on mount
-    const savedTheme = localStorage.getItem('sitioTheme') || 'sitio'
-    document.documentElement.style.setProperty('--theme-primary', '') // no-op ensures CSSVars exist
-    setCurrentTheme(savedTheme)
+  document.documentElement.style.setProperty('--theme-primary', '') // ensure CSSVars exist
     initializeGame()
     
     // Configuração inicial da música com base na dificuldade
     if (window.sitioMusicEngine && (musicPlaying || isPlaying)) {
       try { 
         window.sitioMusicEngine.start('exploration', { difficulty }) 
-      } catch {}
+      } catch { /* noop */ }
     }
   }, [initializeGame, difficulty, musicPlaying, isPlaying])
 
@@ -276,7 +273,7 @@ export default function MemoryGame({ musicPlaying, setMusicPlaying }) {
   }, [])
 
   const speak = useCallback((text) => {
-    try {
+  try {
       if (!ttsEnabled) return
       if (!('speechSynthesis' in window)) return
       const utter = new SpeechSynthesisUtterance(text)
@@ -284,7 +281,7 @@ export default function MemoryGame({ musicPlaying, setMusicPlaying }) {
       utter.rate = 1
       window.speechSynthesis.cancel()
       window.speechSynthesis.speak(utter)
-    } catch {}
+  } catch { /* noop */ }
   }, [ttsEnabled])
 
   const handleCardClick = useCallback((cardIndex) => {
@@ -329,7 +326,7 @@ export default function MemoryGame({ musicPlaying, setMusicPlaying }) {
               if (window.sitioMusicEngine && (musicPlaying || isPlaying) && audioEngine.dynamicMusicEnabled) {
                 try { 
                   window.sitioMusicEngine.start('action', { difficulty, streak: next }) 
-                } catch {}
+                } catch { /* music engine unavailable */ }
               }
             }
             return next
@@ -367,7 +364,7 @@ export default function MemoryGame({ musicPlaying, setMusicPlaying }) {
               try { 
                 window.sitioMusicEngine.start('victory', { difficulty, moves, streak })
                 window.sitioMusicEngine.playVictoryMelody()
-              } catch {}
+              } catch { /* noop */ }
             }
             
             setTimeout(() => setShowCelebration(false), 1000)
@@ -379,7 +376,7 @@ export default function MemoryGame({ musicPlaying, setMusicPlaying }) {
               if (window.sitioMusicEngine && (musicPlaying || isPlaying) && audioEngine.dynamicMusicEnabled) {
                 try { 
                   window.sitioMusicEngine.start('tension', { difficulty }) 
-                } catch {}
+                } catch { /* noop */ }
               }
             }
           }
@@ -392,7 +389,7 @@ export default function MemoryGame({ musicPlaying, setMusicPlaying }) {
           if (window.sitioMusicEngine && (musicPlaying || isPlaying) && audioEngine.dynamicMusicEnabled) {
             try { 
               window.sitioMusicEngine.start('puzzle', { difficulty }) 
-            } catch {}
+            } catch { /* noop */ }
           }
           // shake on miss
           setTimeout(() => {
@@ -409,7 +406,7 @@ export default function MemoryGame({ musicPlaying, setMusicPlaying }) {
         setFlipped([])
       }, 800)
     }
-  }, [flipped, matched, finished, cards, moves, score, audioEngine, gameStarted, difficulty, elapsedMs, isPlaying, musicPlaying, speak, streak])
+  }, [flipped, matched, finished, cards, moves, audioEngine, gameStarted, difficulty, elapsedMs, isPlaying, musicPlaying, speak, streak, controlsLocked, paused])
 
   // Calcula melhor grid e tamanho de carta para ocupar a tela inteira com foco nas cartas
   const recalcGrid = useCallback(() => {
@@ -428,7 +425,6 @@ export default function MemoryGame({ musicPlaying, setMusicPlaying }) {
       if (size > best.size) best = { size, cols, rows }
     }
     setGridCols(best.cols)
-    setGridRows(best.rows)
     setCardPx(best.size)
   }, [cards.length, pairCount])
 

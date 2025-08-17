@@ -19,10 +19,8 @@ function App() {
   // refs
   const videoRef = useRef(null)
   const canvasRef = useRef(null)
-  const analyserRef = useRef(null)
-  const audioCtxRef = useRef(null)
   const templatesRef = useRef([])
-  const [vizData, setVizData] = useState(new Array(12).fill(4))
+  const [vizData] = useState(new Array(12).fill(4))
   const [flipCamera, setFlipCamera] = useState(false)
   const [detectedCards, setDetectedCards] = useState([])
   const [snapshots, setSnapshots] = useState([])
@@ -67,7 +65,7 @@ function App() {
       }
     }
     return () => { if (videoStream) videoStream.getTracks().forEach(track => track.stop()) }
-  }, [cameraActive, selectedDeviceId, flipCamera])
+  }, [cameraActive, selectedDeviceId, flipCamera, videoStream])
 
   // flip
   useEffect(() => {
@@ -80,7 +78,7 @@ function App() {
       if (cameraActive) setCameraActive(false)
       if (microphoneActive) setMicrophoneActive(false)
     }
-  }, [view])
+  }, [view, cameraActive, microphoneActive])
 
   // Navegação via evento do jogo
   useEffect(() => {
@@ -99,7 +97,7 @@ function App() {
   const [lowLight, setLowLight] = useState(false)
   const lowLightRef = useRef(0)
   useEffect(() => {
-    if (!useAI || aiReady) return
+  if (!useAI || aiReady) return
     // Ensure the worker path works in production (GitHub Pages subpath)
     const workerUrl = `${import.meta.env.BASE_URL || '/'}aiWorker.js`
     aiWorkerRef.current = new Worker(workerUrl)
@@ -128,7 +126,7 @@ function App() {
       }
     }
   // Dispara inicialização da IA
-  try { aiWorkerRef.current.postMessage({ type: 'INIT_AI' }) } catch {}
+  try { aiWorkerRef.current.postMessage({ type: 'INIT_AI' }) } catch { /* noop */ }
   }, [cameraActive, useAI, aiReady])
 
   // Draw video to canvas and periodically ask AI worker to compare similarity
@@ -163,7 +161,7 @@ function App() {
             if (lowLightCounter > 12 && !lowLight) setLowLight(true)
             if (lowLightCounter < 6 && lowLight) setLowLight(false)
             lowLightRef.current = lowLightCounter
-          } catch {}
+          } catch { /* ignore low-light sampling errors */ }
           // Periodically run AI similarity on center crop
           const now = performance.now()
           if (useAI && aiWorkerRef.current && aiReady && now - lastEmbedding > 350) {
@@ -180,8 +178,8 @@ function App() {
                   templates: templatesRef.current.filter(t => t.embedding && t.embeddingNorm)
                 })
               }
-            } catch (err) {
-              console.warn('AI processing error:', err)
+            } catch {
+              // AI processing error ignored to keep UI responsive
             }
           }
         }
@@ -190,11 +188,11 @@ function App() {
     }
     rafId = requestAnimationFrame(step)
     return () => { if (rafId) cancelAnimationFrame(rafId) }
-  }, [cameraActive, useAI, aiReady, flipCamera])
+  }, [cameraActive, useAI, aiReady, flipCamera, lowLight])
 
   // Procedural music engine
   useEffect(() => {
-    const ENGINE = {
+  const ENGINE = {
       ctxStarted: false,
   Tone: null,
   Soundfont: null,
@@ -212,17 +210,15 @@ function App() {
       setup: async () => {
         if (!ENGINE.Tone) {
           ENGINE.Tone = await import('tone')
-          // ESM default export shape
-          ENGINE.Tone = ENGINE.Tone
         }
         if (!ENGINE.Soundfont) {
           try {
             const mod = await import('soundfont-player')
             ENGINE.Soundfont = mod.default
-          } catch {}
+          } catch { /* noop */ }
         }
         if (!ENGINE.ctxStarted) {
-          try { await ENGINE.Tone.start() } catch {}
+          try { await ENGINE.Tone.start() } catch { /* audio context start failed */ }
           ENGINE.ctxStarted = true
         }
         
@@ -312,7 +308,7 @@ function App() {
             ENGINE.sf.accordion = await ENGINE.Soundfont.instrument(ac, 'accordion')
             ENGINE.sf.violao = await ENGINE.Soundfont.instrument(ac, 'acoustic_guitar_steel')
           }
-        } catch (e) {
+  } catch {
           console.log('🎵 Timbres do Sítio: usando sintetizadores como fallback')
         }
         
@@ -608,7 +604,7 @@ function App() {
           }
           
           bar++
-        }, '1m') // compasso de 4/4
+  }, '1m') // compasso de 4/4
         
         ENGINE.loop.start(0)
   ENGINE.Tone.Transport.start()
@@ -616,7 +612,7 @@ function App() {
 
       // Melodia especial de vitória
       playVictoryMelody: () => {
-        if (ENGINE.victoryPart) { ENGINE.victoryPart.dispose(); ENGINE.victoryPart = null }
+  if (ENGINE.victoryPart) { ENGINE.victoryPart.dispose(); ENGINE.victoryPart = null }
         
         // Melodia triunfal inspirada em "Parabéns pra Você" e festa junina
         const victoryMotif = [
@@ -751,13 +747,13 @@ function App() {
         if (ENGINE.victoryPart) { ENGINE.victoryPart.stop(); ENGINE.victoryPart.dispose(); ENGINE.victoryPart = null }
         if (ENGINE.Tone) {
           ENGINE.Tone.Transport.swing = 0
-          try { ENGINE.Tone.Transport.stop() } catch {}
+          try { ENGINE.Tone.Transport.stop() } catch { /* noop */ }
         }
       }
     }
     musicEngineRef.current = ENGINE
     window.sitioMusicEngine = ENGINE
-    return () => { ENGINE.stop() }
+  return () => { ENGINE.stop() }
   }, [])
 
   useEffect(() => {

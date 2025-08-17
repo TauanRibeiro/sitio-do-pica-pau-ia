@@ -36,7 +36,7 @@ async function playAchievementSound() {
     const { getAudioEngine } = await import('./audioEngine')
     const audioEngine = getAudioEngine()
     audioEngine.playAchievementUnlock()
-  } catch (err) {
+  } catch {
     // Fallback para Tone.js direto
     try {
       const Tone = await import('tone')
@@ -56,8 +56,8 @@ async function playAchievementSound() {
         synth.dispose()
         reverb.dispose()
       }, 1000)
-    } catch (fallbackErr) {
-      console.log('Could not play achievement sound:', fallbackErr)
+    } catch {
+      // Could not play achievement sound
     }
   }
 }
