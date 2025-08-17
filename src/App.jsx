@@ -814,8 +814,9 @@ function App() {
       {/* ThemeSelector está disponível dentro do jogo; removido daqui para evitar redundância */}
       <div className="fixed inset-0 bg-[url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Cpath d=%22M10 10h80v80H10z%22 fill=%22none%22 stroke=%22%23FFD700%22 stroke-width=%220.5%22 opacity=%220.1%22/%3E%3C/svg%3E')] pointer-events-none" />
       
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-gradient-to-r from-[var(--theme-primary,#FFD700)]/20 via-[var(--theme-secondary,#8B4513)]/20 to-[var(--theme-accent,#FF4500)]/20 backdrop-blur-lg border-b border-[var(--theme-primary,#FFD700)]/30">
+  {/* Header - oculto no modo jogo imersivo */}
+  {view !== 'game' && (
+  <header className="sticky top-0 z-50 bg-gradient-to-r from-[var(--theme-primary,#FFD700)]/20 via-[var(--theme-secondary,#8B4513)]/20 to-[var(--theme-accent,#FF4500)]/20 backdrop-blur-lg border-b border-[var(--theme-primary,#FFD700)]/30">
         <div className="mx-auto max-w-7xl px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -868,6 +869,7 @@ function App() {
           </div>
         </div>
       </header>
+  )}
 
       {/* Hero - removido quando está no game */}
   {view !== 'game' && (
@@ -1020,12 +1022,14 @@ function App() {
         </section>
       )}
       
+      {view !== 'game' && (
       <footer className="relative mt-2 border-t border-[var(--theme-primary,#FFD700)]/30">
         <div className="mx-auto max-w-5xl px-4 py-6 text-[var(--theme-text,#2F4F2F)] text-sm flex flex-wrap items-center justify-between gap-2">
-          <span className="inline-flex items-center gap-2 font-semibold"><span className="h-2.5 w-2.5 rounded-full bg-[var(--theme-primary,#FFD700)] shadow-sm" /> 👩‍🎨 Malie • ⚡ Tauan • 🧙‍♀️ Carla • 👵 Vovó Jane</span>
-          <span className="font-semibold text-[var(--theme-text,#2F4F2F)]">🏫 Projeto para Feira de Ciências - Colégio Meta, Sobradinho-DF</span>
+          <span className="inline-flex items-center gap-2 font-extrabold text-[var(--theme-text,#2F4F2F)] text-with-bg"><span className="h-2.5 w-2.5 rounded-full bg-[var(--theme-primary,#FFD700)] shadow-sm" /> 👩‍🎨 Malie • ⚡ Tauan • 🧙‍♀️ Carla • 👵 Vovó Jane</span>
+          <span className="font-extrabold text-with-bg">🏫 Projeto para Feira de Ciências - Colégio Meta, Sobradinho-DF</span>
         </div>
       </footer>
+      )}
     </div>
   )
 }
