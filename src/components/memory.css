@@ -1,17 +1,17 @@
-/* Mobile-first CSS for Memory Game - Alto Contraste */
+/* Mobile-first CSS for Memory Game - Alto Contraste e modo imersivo */
 .memory-container { 
   --card-size: 128px; /* default */
-  max-width: 1200px; 
-  margin: 0 auto; 
-  padding: 0.75rem; 
+  --cols: 3;
+  margin: 0; 
+  padding: 0; 
   position: relative;
   min-height: 100vh;
   min-height: 100dvh;
   box-sizing: border-box;
-  background: #FFFFFF;
-  border-radius: 20px;
-  border: 4px solid #000000;
-  box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+  background: radial-gradient(1200px 800px at 20% 10%, rgba(255,215,0,0.25), transparent 60%),
+              radial-gradient(1000px 700px at 80% 30%, rgba(255,69,0,0.18), transparent 60%),
+              linear-gradient(135deg, #FFF8DC 0%, #FDE68A 40%, #F59E0B 100%);
+  background-attachment: fixed;
 }
 
 /* === HEADER DO JOGO === */
@@ -40,10 +40,17 @@
 /* === LAYOUT PRINCIPAL (GRID + SIDEBAR) === */
 .memory-layout {
   display: grid;
-  grid-template-columns: 1fr 300px; /* Jogo principal à esquerda, sidebar à direita */
+  grid-template-columns: 1fr 300px; /* padrão com sidebar (não usado no modo imersivo) */
   align-items: start;
   gap: 1.5rem;
   padding: 1rem 0;
+}
+
+/* Modo apenas cartas: ocupa a tela inteira e centraliza a grade */
+.memory-layout.only-grid {
+  grid-template-columns: 1fr;
+  place-items: center;
+  padding: 1rem;
 }
 
 /* === GRID DE CARTAS === */
@@ -51,7 +58,7 @@
   display: grid; 
   gap: 0.75rem;
   justify-content: center;
-  /* As colunas são definidas pela dificuldade */
+  grid-template-columns: repeat(var(--cols), minmax(48px, var(--card-size)));
 }
 
 /* Tamanhos de cartas ajustados por dificuldade */
@@ -67,17 +74,10 @@
   --card-size: 100px;
 }
 
-.difficulty-easy .grid {
-  grid-template-columns: repeat(3, var(--card-size));
-}
-
-.difficulty-medium .grid {
-  grid-template-columns: repeat(4, var(--card-size));
-}
-
-.difficulty-hard .grid {
-  grid-template-columns: repeat(6, var(--card-size));
-}
+/* Valores padrão quando não recalculado por JS */
+.difficulty-easy .grid { grid-template-columns: repeat(3, var(--card-size)); }
+.difficulty-medium .grid { grid-template-columns: repeat(4, var(--card-size)); }
+.difficulty-hard .grid { grid-template-columns: repeat(6, var(--card-size)); }
 
 
 /* === SIDEBAR DE CONTROLES === */
@@ -188,6 +188,7 @@
   transition: all 0.3s ease;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
+  backdrop-filter: saturate(1.1);
 }
 
 .card:hover { 
@@ -219,7 +220,7 @@
 
 /* Frente da carta - Personagem */
 .card .front { 
-  background: linear-gradient(135deg, var(--theme-card, #FFFACD) 0%, var(--theme-primary, #FFD700)/40 100%);
+  background: linear-gradient(135deg, rgba(255,250,205,1) 0%, rgba(255,215,0,0.4) 100%);
   border-color: var(--theme-accent, #FF4500);
   color: var(--theme-text, #2F4F2F); 
   transform: rotateY(180deg); 
@@ -231,7 +232,7 @@
 
 /* Verso da carta - Logo do Sítio */
 .card .back { 
-  background: linear-gradient(135deg, var(--theme-secondary, #8B4513) 0%, var(--theme-primary, #FFD700)/20 100%);
+  background: linear-gradient(135deg, rgba(139,69,19,1) 0%, rgba(255,215,0,0.2) 100%);
   border-color: var(--theme-primary, #FFD700);
   transform: rotateY(0deg); 
   color: var(--theme-primary, #FFD700); 
@@ -339,7 +340,8 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: radial-gradient(circle, var(--theme-primary, #FFD700)/20 0%, transparent 70%);
+  background: radial-gradient(circle at 50% 40%, rgba(255,215,0,0.25) 0%, transparent 65%),
+              radial-gradient(circle at 20% 80%, rgba(255,69,0,0.25) 0%, transparent 70%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -430,7 +432,7 @@
   }
   
   .memory-container { 
-    padding: 0.5rem; 
+  padding: 0.5rem; 
   }
   .game-header .game-title { 
     font-size: 1.5rem; 
@@ -503,3 +505,23 @@
     align-items: center;
     gap: 0.5rem;
 }
+
+/* Botão de sair (flutuante e alto contraste) */
+.exit-btn {
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  z-index: 3000;
+  padding: 0.6rem 0.9rem;
+  border-radius: 12px;
+  border: 3px solid #000;
+  background: linear-gradient(135deg, #ffffff 0%, #fef3c7 100%);
+  color: #000;
+  font-weight: 900;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+}
+
+/* Imersão: remove molduras internas */
+.memory-container.immersive .game-header,
+.memory-container.immersive .side-panel { display: none !important; }
+

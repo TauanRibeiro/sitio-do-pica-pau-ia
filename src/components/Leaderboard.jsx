@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import './leaderboard.css'
 
-function Leaderboard({ onClose, newScore = null, difficulty = 'easy', moves = 0, streak = 0 }) {
+function Leaderboard({ onClose, newScore = null, difficulty = 'easy', moves = 0, streak = 0, timeSeconds = null }) {
   const [playerName, setPlayerName] = useState('')
   const [showNameInput, setShowNameInput] = useState(false)
   const [leaderboard, setLeaderboard] = useState([])
@@ -32,6 +32,7 @@ function Leaderboard({ onClose, newScore = null, difficulty = 'easy', moves = 0,
       difficulty,
       moves,
       streak,
+      time: timeSeconds,
       date: new Date().toLocaleDateString('pt-BR'),
       timestamp: Date.now()
     }
@@ -91,6 +92,7 @@ function Leaderboard({ onClose, newScore = null, difficulty = 'easy', moves = 0,
               <span>Pontuação: {newScore}</span>
               <span>Movimentos: {moves}</span>
               <span>Streak: {streak}x</span>
+              {timeSeconds !== null && <span>Tempo: {timeSeconds}s</span>}
             </div>
             <div className="name-input-group">
               <input
@@ -116,7 +118,7 @@ function Leaderboard({ onClose, newScore = null, difficulty = 'easy', moves = 0,
               <p>Complete um jogo para aparecer aqui!</p>
             </div>
           ) : (
-            leaderboard.map((entry, index) => (
+      leaderboard.map((entry, index) => (
               <div key={`${entry.timestamp}-${index}`} className={`leaderboard-entry ${index < 3 ? 'podium' : ''}`}>
                 <div className="position">
                   {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`}
@@ -135,7 +137,8 @@ function Leaderboard({ onClose, newScore = null, difficulty = 'easy', moves = 0,
                   <div className="score">{entry.score}pt</div>
                   <div className="sub-stats">
                     <span>{entry.moves}mov</span>
-                    <span>{entry.streak}x</span>
+        <span>{entry.streak}x</span>
+        {entry.time ? <span>{entry.time}s</span> : null}
                   </div>
                 </div>
               </div>
@@ -145,7 +148,7 @@ function Leaderboard({ onClose, newScore = null, difficulty = 'easy', moves = 0,
 
         <div className="leaderboard-footer">
           <p>🎯 Complete jogos para entrar no ranking!</p>
-          <p>📊 Pontuação = 10pts base + streak × 2</p>
+          <p>📊 Pontuação considera tempo, movimentos e dificuldade</p>
         </div>
       </div>
     </div>

@@ -1,7 +1,6 @@
-﻿import React, { useState, useEffect, useMemo, useCallback } from 'react'
+﻿import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import './memory.css'
 import './themes.css'
-import ThemeSelector from './ThemeSelectorClean'
 import Leaderboard from './Leaderboard'
 
 class MobileAudioEngine {
@@ -192,6 +191,13 @@ export default function MemoryGame({ musicPlaying, setMusicPlaying }) {
   const [showOnboarding, setShowOnboarding] = useState(true)
   const [paused, setPaused] = useState(false)
   const [ttsEnabled, setTtsEnabled] = useState(false)
+  const [gameStarted, setGameStarted] = useState(false)
+  const [elapsedMs, setElapsedMs] = useState(0)
+  const timerRef = useRef(null)
+  const [finalScore, setFinalScore] = useState(null)
+  const [gridCols, setGridCols] = useState(3)
+  const [gridRows, setGridRows] = useState(2)
+  const [cardPx, setCardPx] = useState(120)
   useEffect(() => { setIsPlaying(!!musicPlaying) }, [musicPlaying])
 
   const pairCount = useMemo(() => {
@@ -219,9 +225,16 @@ export default function MemoryGame({ musicPlaying, setMusicPlaying }) {
     setFinished(false)
     setShowCelebration(false)
     setStreak(0)
-  setControlsLocked(false)
-  setShowOnboarding(true)
-  setPaused(false)
+    setControlsLocked(false)
+    setShowOnboarding(true)
+    setPaused(false)
+    setGameStarted(false)
+    setElapsedMs(0)
+    setFinalScore(null)
+    if (timerRef.current) {
+      clearInterval(timerRef.current)
+      timerRef.current = null
+    }
     
     // Reset musical para exploração com contexto de dificuldade
     if (window.sitioMusicEngine && (musicPlaying || isPlaying) && audioEngine.dynamicMusicEnabled) {
@@ -280,6 +293,15 @@ export default function MemoryGame({ musicPlaying, setMusicPlaying }) {
     }
     // Primeiro clique de uma rodada: bloqueia controles (exceto música)
     if (!controlsLocked) setControlsLocked(true)
+    // Inicia timer no primeiro clique do jogo
+    if (!gameStarted) {
+      setGameStarted(true)
+      const start = performance.now()
+      const tick = () => {
+        setElapsedMs(Math.max(0, Math.floor(performance.now() - start)))
+      }
+      timerRef.current = setInterval(tick, 1000)
+    }
 
     audioEngine?.onCardFlip()
   const card = cards[cardIndex]
@@ -329,6 +351,16 @@ export default function MemoryGame({ musicPlaying, setMusicPlaying }) {
             audioEngine?.onGameComplete()
             setControlsLocked(false)
             speak('Você venceu!')
+            // Para timer e calcula score final baseado em tempo/movimentos/dificuldade
+            if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null }
+            const elapsedSeconds = Math.max(1, Math.round(elapsedMs / 1000))
+            const pairs = Math.floor(cards.length / 2)
+            const difficultyMult = difficulty === 'hard' ? 2.0 : difficulty === 'medium' ? 1.5 : 1.0
+            const timeScore = Math.max(0, 10000 - elapsedSeconds * 25) // penaliza 25 por segundo
+            const movePenalty = Math.max(0, (moves - (pairs * 2))) * 10 // cada flip extra custa 10
+            const raw = Math.max(0, timeScore - movePenalty) 
+            const computed = Math.round(raw * difficultyMult + streak * 50)
+            setFinalScore(computed)
             
             // Música especial de vitória
             if (window.sitioMusicEngine && (musicPlaying || isPlaying) && audioEngine.dynamicMusicEnabled) {
@@ -377,12 +409,44 @@ export default function MemoryGame({ musicPlaying, setMusicPlaying }) {
         setFlipped([])
       }, 800)
     }
-  }, [flipped, matched, finished, cards, moves, score, audioEngine])
+  }, [flipped, matched, finished, cards, moves, score, audioEngine, gameStarted, difficulty, elapsedMs, isPlaying, musicPlaying, speak, streak])
 
-  const containerClass = `memory-container difficulty-${difficulty}`
+  // Calcula melhor grid e tamanho de carta para ocupar a tela inteira com foco nas cartas
+  const recalcGrid = useCallback(() => {
+    const total = cards.length || pairCount * 2
+    if (!total) return
+    const vw = Math.max(320, window.innerWidth)
+    const vh = Math.max(400, window.innerHeight)
+    const gap = 12 // px
+    const padX = 24, padY = 24 // padding interno
+    let best = { size: 0, cols: 2, rows: Math.ceil(total / 2) }
+    for (let cols = 2; cols <= Math.min(total, 8); cols++) {
+      const rows = Math.ceil(total / cols)
+      const cardW = Math.floor((vw - padX * 2 - gap * (cols - 1)) / cols)
+      const cardH = Math.floor((vh - padY * 2 - gap * (rows - 1)) / rows)
+      const size = Math.max(48, Math.min(cardW, cardH))
+      if (size > best.size) best = { size, cols, rows }
+    }
+    setGridCols(best.cols)
+    setGridRows(best.rows)
+    setCardPx(best.size)
+  }, [cards.length, pairCount])
+
+  useEffect(() => { recalcGrid() }, [recalcGrid, difficulty])
+  useEffect(() => {
+    const onResize = () => recalcGrid()
+    window.addEventListener('resize', onResize)
+    window.addEventListener('orientationchange', onResize)
+    return () => {
+      window.removeEventListener('resize', onResize)
+      window.removeEventListener('orientationchange', onResize)
+    }
+  }, [recalcGrid])
+
+  const containerClass = `memory-container difficulty-${difficulty} immersive`
 
   return (
-    <div className={containerClass}>
+    <div className={containerClass} style={{ ['--cols']: gridCols, ['--card-size']: `${cardPx}px` }}>
       {showCelebration && (
         <div className="celebration-overlay">
           <div className="celebration-text">
@@ -403,13 +467,22 @@ export default function MemoryGame({ musicPlaying, setMusicPlaying }) {
           <div className="pause-box">PAUSADO</div>
         </div>
       )}
-      
-      <header className="game-header">
-        <h1 className="game-title">SÍTIO DO PICA-PAU IA</h1>
-      </header>
+      {/* Botão de sair (apenas opção além das cartas) */}
+      <button
+        className="exit-btn"
+        onClick={() => {
+          if (confirm('Deseja sair do jogo atual? Seu progresso será perdido.')) {
+            if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null }
+            window.dispatchEvent(new CustomEvent('sitio:navigate', { detail: 'vision' }))
+          }
+        }}
+        aria-label="Sair do jogo"
+      >
+        ← Sair
+      </button>
 
-      <div className="memory-layout">
-        <div className="grid">
+      <div className="memory-layout only-grid">
+        <div className="grid" style={{ ['--cols']: gridCols, ['--card-size']: `${cardPx}px` }}>
           {cards.map((card, index) => (
             <div
               key={card.uniqueId}
@@ -429,74 +502,17 @@ export default function MemoryGame({ musicPlaying, setMusicPlaying }) {
             </div>
           ))}
         </div>
-
-        <aside className="side-panel">
-          <h3>Painel de Controle</h3>
-          
-          <h4>Navegação</h4>
-          <div className="navigation-controls">
-            <button 
-              className="control-btn primary-btn" 
-              onClick={() => window.dispatchEvent(new CustomEvent('sitio:navigate', { detail: 'game' }))}
-            >
-              🎮 Jogar Agora
-            </button>
-            <button 
-              className="control-btn secondary-btn" 
-              onClick={() => window.dispatchEvent(new CustomEvent('sitio:navigate', { detail: 'vision' }))}
-            >
-              📷 Modo Câmera
-            </button>
-            <button 
-              className={`control-btn music-btn ${isPlaying ? 'playing' : ''}`} 
-              onClick={() => {
-                audioEngine?.vibrate([30]);
-                setMusicPlaying(p => !p);
-              }}
-            >
-              {isPlaying ? '❚❚ Pausar Música' : '▶️ Tocar Música'}
-            </button>
-          </div>
-          
-          <h4>Estatísticas</h4>
-          <div className="game-stats">
-            <div className="stat-item"><span>💰 Pontos:</span> <span className="stat-value">{score}</span></div>
-            <div className="stat-item"><span>👟 Jogadas:</span> <span className="stat-value">{moves}</span></div>
-            <div className="stat-item"><span>🔥 Sequência:</span> <span className="stat-value">{streak}</span></div>
-          </div>
-
-          <h4>Dificuldade</h4>
-          <div className="difficulty-selector">
-            {['easy', 'medium', 'hard'].map(d => (
-              <button 
-                key={d} 
-                className={`difficulty-btn ${difficulty === d ? 'active' : ''}`} 
-                onClick={() => {
-                  if (controlsLocked) return;
-                  localStorage.setItem('memoryDifficulty', d);
-                  setDifficulty(d);
-                }}
-                disabled={controlsLocked}
-              >
-                {d === 'easy' ? 'Fácil' : d === 'medium' ? 'Médio' : 'Difícil'}
-              </button>
-            ))}
-          </div>
-
-          <h4>Ações</h4>
-          <div className="game-controls">
-            <button className="control-btn" onClick={initializeGame} disabled={controlsLocked}>🔄 Reiniciar</button>
-            <button className="control-btn leaderboard-btn" onClick={() => setShowLeaderboard(true)} disabled={controlsLocked}>🏆 Ranking</button>
-            <button className="control-btn" onClick={() => setShowAudioSettings(true)} disabled={controlsLocked}>🔊 Áudio</button>
-          </div>
-          
-          <div className="game-footer">
-            <ThemeSelector onThemeChange={setCurrentTheme} currentTheme={currentTheme} disabled={controlsLocked} />
-          </div>
-        </aside>
       </div>
 
-      {showLeaderboard && <Leaderboard score={score} moves={moves} difficulty={difficulty} onClose={() => setShowLeaderboard(false)} />}
+      {showLeaderboard && (
+        <Leaderboard 
+          newScore={finalScore ?? score} 
+          moves={moves} 
+          difficulty={difficulty} 
+          timeSeconds={Math.max(1, Math.round(elapsedMs/1000))}
+          onClose={() => setShowLeaderboard(false)} 
+        />
+      )}
       
       {showAudioSettings && (
         <div className="audio-settings-overlay" onClick={() => setShowAudioSettings(false)}>
