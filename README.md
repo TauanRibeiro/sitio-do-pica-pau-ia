@@ -59,5 +59,10 @@ Ajuste conforme a estrutura real do seu projeto.
 ## Licença
 Defina aqui a licença do projeto (por exemplo, MIT, Apache 2.0, etc.).
 
+## Deploy
+Este repositório está configurado para deployment automático no GitHub Pages. A cada push na branch `main`, o site estático localizado na pasta `site/` será automaticamente publicado.
+
+O site estará disponível em: https://tauanribeiro.github.io/sitio-do-pica-pau-ia/ após a primeira execução bem-sucedida do workflow.
+
 ## Contato
 - Abra uma issue no repositório para dúvidas ou sugestões.

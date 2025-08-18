@@ -3,41 +3,28 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Sítio do Pica-Pau - Jogo da Memória</title>
-  <meta name="description" content="Jogo da memória simples e responsivo." />
-  <link rel="stylesheet" href="./styles.css" />
+  <title>Sítio do Pica-pau IA</title>
+  <meta name="description" content="Projeto para explorar e desenvolver soluções de IA inspiradas no universo do Sítio do Pica-Pau Amarelo." />
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <header class="topbar">
-    <h1>Jogo da Memória</h1>
-    <div class="stats" aria-live="polite">
-      <span id="moves">0</span> jogadas • Tempo: <span id="timer">00:00</span>
-    </div>
+  <header class="container">
+    <h1>Sítio do Pica-pau IA</h1>
+    <p class="subtitle">Explorando soluções de IA inspiradas no universo do Sítio do Pica-Pau Amarelo</p>
   </header>
 
   <main class="container">
-    <section class="controls">
-      <label for="size">Tamanho:</label>
-      <select id="size">
-        <option value="4">4x4</option>
-        <option value="6">6x6</option>
-      </select>
-      <button id="newGame">Novo jogo</button>
-    </section>
-
-    <section id="grid" class="grid" aria-label="Tabuleiro do jogo" aria-live="polite"></section>
-
-    <section id="result" class="result" hidden>
-      <h2>Parabéns!</h2>
-      <p>Você venceu em <strong id="finalMoves">0</strong> jogadas em <strong id="finalTime">00:00</strong>.</p>
-      <button id="playAgain">Jogar novamente</button>
+    <section class="card">
+      <h2>Bem-vinde!</h2>
+      <p>Este é um boilerplate inicial. Personalize este conteúdo em <code>site/index.html</code>, os estilos em <code>site/styles.css</code> e a lógica em <code>site/script.js</code>.</p>
+      <p>Repositório: <a href="https://github.com/TauanRibeiro/sitio-do-pica-pau-ia" target="_blank" rel="noopener">TauanRibeiro/sitio-do-pica-pau-ia</a></p>
     </section>
   </main>
 
-  <footer class="footer">
-    <p>Feito com ❤️</p>
+  <footer class="container footer">
+    <small>© <span id="year"></span> Sítio do Pica-pau IA · Publicado com GitHub Pages</small>
   </footer>
 
-  <script src="./script.js" defer></script>
+  <script src="script.js"></script>
 </body>
 </html>
