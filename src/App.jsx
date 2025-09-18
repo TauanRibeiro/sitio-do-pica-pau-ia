@@ -10,7 +10,7 @@ function App() {
   const [microphoneActive, setMicrophoneActive] = useState(false)
   const [musicPlaying, setMusicPlaying] = useState(false)
   const [videoStream, setVideoStream] = useState(null)
-  const [view, setView] = useState('game')
+  const [view, setView] = useState('home')
   const [videoDevices, setVideoDevices] = useState([])
   const [selectedDeviceId, setSelectedDeviceId] = useState(null)
   const [useAI, setUseAI] = useState(true)
@@ -831,6 +831,16 @@ function App() {
             <nav className="hidden sm:flex items-center gap-3">
               <button 
                 className={`px-4 py-2.5 rounded-xl font-bold text-sm transition-all transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary,#FFD700)]/50 ${
+                  view==='home'
+                    ? 'bg-[var(--theme-primary,#FFD700)] text-[var(--theme-text,#2F4F2F)] shadow-lg' 
+                    : 'bg-white/10 text-[var(--theme-text,#2F4F2F)] hover:bg-white/20'
+                }`} 
+                onClick={() => setView('home')}
+              >
+                🏠 Início
+              </button>
+              <button 
+                className={`px-4 py-2.5 rounded-xl font-bold text-sm transition-all transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary,#FFD700)]/50 ${
                   view==='game'
                     ? 'bg-[var(--theme-primary,#FFD700)] text-[var(--theme-text,#2F4F2F)] shadow-lg' 
                     : 'bg-white/10 text-[var(--theme-text,#2F4F2F)] hover:bg-white/20'
@@ -867,8 +877,8 @@ function App() {
       </header>
   )}
 
-      {/* Hero - removido quando está no game */}
-  {view !== 'game' && (
+    {/* Home hero (only on home) */}
+  {view === 'home' && (
   <section className="relative isolate">
         <div className="absolute inset-0 -z-10 bg-gradient-to-br from-[var(--theme-primary,#FFD700)]/20 via-[var(--theme-secondary,#8B4513)]/10 to-[var(--theme-accent,#FF4500)]/20" />
         <div className="mx-auto max-w-6xl px-4 py-8 sm:py-12">
@@ -896,7 +906,8 @@ function App() {
           </div>
         </div>
   </section>
-      )}      {/* Vision controls */}
+  )}
+  {/* Vision controls */}
   {view === 'vision' && (
         <div className="mx-auto max-w-5xl px-4 py-4 bg-white/30 rounded-2xl backdrop-blur-md border border-[var(--theme-primary,#FFD700)]/30 mb-4">
           <div className="flex flex-wrap gap-3 items-center">

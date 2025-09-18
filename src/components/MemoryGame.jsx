@@ -462,10 +462,29 @@ export default function MemoryGame({ musicPlaying }) {
   const recalcGrid = useCallback(() => {
     const total = cards.length || pairCount * 2
     if (!total) return
-    const vw = Math.max(320, window.innerWidth)
-    const vh = Math.max(400, window.innerHeight)
+    const vw = Math.max(320, window.visualViewport?.width || window.innerWidth)
+    const vhRaw = Math.max(400, window.visualViewport?.height || window.innerHeight)
+    const isSmall = vw <= 600
+    // Reserve space for top buttons/safe areas on mobile to avoid clipping last row
+    const reservedTop = isSmall ? 72 : 24
+    const reservedBottom = isSmall ? 24 : 16
+    const vh = Math.max(320, vhRaw - reservedTop - reservedBottom)
     const gap = 12 // px
-    const padX = 24, padY = 24 // padding interno
+    const padX = 16, padY = 16 // internal padding
+
+    // Prefer fixed 3x2 layout on small screens for 6 cards (easy mode)
+    if (isSmall && total === 6) {
+      const cols = 3
+      const rows = 2
+      const cardW = Math.floor((vw - padX * 2 - gap * (cols - 1)) / cols)
+      const cardH = Math.floor((vh - padY * 2 - gap * (rows - 1)) / rows)
+      const size = Math.max(64, Math.min(cardW, cardH))
+      setGridCols(cols)
+      setCardPx(size)
+      return
+    }
+
+    // Generic best-fit search
     let best = { size: 0, cols: 2, rows: Math.ceil(total / 2) }
     for (let cols = 2; cols <= Math.min(total, 8); cols++) {
       const rows = Math.ceil(total / cols)
@@ -534,28 +553,31 @@ export default function MemoryGame({ musicPlaying }) {
         aria-label="Configurações de áudio"
         title={audioInitialized ? 'Audio funcionando - Clique para configurações' : 'Audio com problemas - Clique para verificar'}
         style={{
-          position: 'absolute',
-          top: '1rem',
-          right: '1rem',
-          background: audioInitialized ? 'rgba(0,150,0,0.9)' : 'rgba(200,50,0,0.9)',
-          color: 'white',
-          border: audioInitialized ? '2px solid rgba(0,200,0,0.5)' : '2px solid rgba(255,100,0,0.5)',
-          borderRadius: '50%',
-          width: '48px',
-          height: '48px',
-          fontSize: '1.2rem',
+          position: 'fixed',
+          top: 'max(12px, env(safe-area-inset-top))',
+          right: '12px',
+          background: audioInitialized ? 'rgba(16,185,129,0.85)' : 'rgba(239,68,68,0.85)',
+          color: '#fff',
+          border: '1px solid rgba(255,255,255,0.25)',
+          borderRadius: '14px',
+          width: '46px',
+          height: '46px',
+          fontSize: '1.15rem',
           cursor: 'pointer',
-          zIndex: 10,
+          zIndex: 30,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          transition: 'all 0.3s ease'
+          boxShadow: '0 10px 24px rgba(0,0,0,0.35)',
+          backdropFilter: 'blur(8px) saturate(130%)',
+          WebkitBackdropFilter: 'blur(8px) saturate(130%)',
+          transition: 'transform 0.15s ease, filter 0.2s ease'
         }}
       >
         {audioInitialized ? '🔊' : '🔇'}
       </button>
 
-      <div className="memory-layout only-grid">
+      <div className="memory-layout only-grid" style={{ paddingTop: 'max(8px, env(safe-area-inset-top))', paddingBottom: 'max(8px, env(safe-area-inset-bottom))' }}>
         <div className="grid" style={{ ['--cols']: gridCols, ['--card-size']: `${cardPx}px` }}>
           {cards.map((card, index) => (
             <div
