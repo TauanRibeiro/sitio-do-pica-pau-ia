@@ -7,19 +7,22 @@ class MobileAudioEngine {
   constructor() {
     this.isInitialized = false
     this.touchStarted = false
-    this.musicEnabled = true
-    this.sfxVolume = 0.8 // volume dos efeitos sonoros
-    this.hapticEnabled = true // feedback tátil
-    this.dynamicMusicEnabled = true // mudanças musicais reativas
     this.audioContext = null
     this.isPlayingBackground = false
     this.backgroundInterval = null
+    this.onInitialized = null // callback for when audio is ready
     this.setupAudioUnlock()
+  }
+
+  // Backwards-compatible initializer used by the React component
+  async initialize() {
+    return this.initAudio()
   }
 
   setupAudioUnlock() {
     const unlockAudio = async () => {
       if (!this.touchStarted) {
+        console.log('🎵 Audio unlock triggered by user interaction')
         this.touchStarted = true
         await this.initAudio()
         document.removeEventListener('touchstart', unlockAudio)
@@ -32,18 +35,27 @@ class MobileAudioEngine {
 
   async initAudio() {
     try {
+      console.log('🎵 Initializing audio context...')
       this.audioContext = new (window.AudioContext || window.webkitAudioContext)()
       if (this.audioContext.state === 'suspended') {
         await this.audioContext.resume()
+        console.log('🎵 Audio context resumed')
       }
       this.isInitialized = true
-  } catch {
+      console.log('✅ Audio engine initialized successfully')
+      if (this.onInitialized) this.onInitialized(true)
+    } catch (error) {
+      console.error('❌ Audio initialization failed:', error)
       this.isInitialized = false
+      if (this.onInitialized) this.onInitialized(false)
     }
   }
 
-  async playTone(frequency, duration, volume = 0.1) {
-    if (!this.musicEnabled || !this.isInitialized || !this.audioContext) return
+  async playTone(frequency, duration, volume = 0.1, musicEnabled = true, sfxVolume = 0.8) {
+    if (!musicEnabled || !this.isInitialized || !this.audioContext) {
+      console.log('🔇 Audio disabled or not initialized')
+      return
+    }
     try {
       const oscillator = this.audioContext.createOscillator()
       const gainNode = this.audioContext.createGain()
@@ -52,15 +64,18 @@ class MobileAudioEngine {
       oscillator.frequency.setValueAtTime(frequency, this.audioContext.currentTime)
       oscillator.type = 'sine'
       gainNode.gain.setValueAtTime(0, this.audioContext.currentTime)
-      gainNode.gain.linearRampToValueAtTime(volume * this.sfxVolume, this.audioContext.currentTime + 0.01)
+      gainNode.gain.linearRampToValueAtTime(volume * sfxVolume, this.audioContext.currentTime + 0.01)
       gainNode.gain.exponentialRampToValueAtTime(0.001, this.audioContext.currentTime + duration)
       oscillator.start(this.audioContext.currentTime)
       oscillator.stop(this.audioContext.currentTime + duration)
-  } catch { /* noop */ }
+      console.log(`🎵 Playing tone: ${frequency}Hz`)
+    } catch (error) {
+      console.warn('🔇 Tone playback failed:', error)
+    }
   }
 
-  playSweep(startFreq, endFreq, duration = 0.18, volume = 0.08, type = 'sine') {
-    if (!this.musicEnabled || !this.isInitialized || !this.audioContext) return
+  playSweep(startFreq, endFreq, duration = 0.18, volume = 0.08, type = 'sine', musicEnabled = true, sfxVolume = 0.8) {
+    if (!musicEnabled || !this.isInitialized || !this.audioContext) return
     try {
       const osc = this.audioContext.createOscillator()
       const gain = this.audioContext.createGain()
@@ -68,73 +83,75 @@ class MobileAudioEngine {
       osc.frequency.setValueAtTime(startFreq, this.audioContext.currentTime)
       osc.frequency.linearRampToValueAtTime(endFreq, this.audioContext.currentTime + duration)
       gain.gain.setValueAtTime(0.0001, this.audioContext.currentTime)
-      gain.gain.exponentialRampToValueAtTime(volume * this.sfxVolume, this.audioContext.currentTime + 0.01)
+      gain.gain.exponentialRampToValueAtTime(volume * sfxVolume, this.audioContext.currentTime + 0.01)
       gain.gain.exponentialRampToValueAtTime(0.0001, this.audioContext.currentTime + duration)
       osc.connect(gain)
       gain.connect(this.audioContext.destination)
       osc.start()
       osc.stop(this.audioContext.currentTime + duration)
-  } catch { /* noop */ }
+    } catch (error) {
+      console.warn('🔇 Sweep playback failed:', error)
+    }
   }
 
   // Feedback háptico para mobile
-  vibrate(pattern = [50]) {
-    if (this.hapticEnabled && navigator.vibrate) {
+  vibrate(pattern = [50], hapticEnabled = true) {
+    if (hapticEnabled && navigator.vibrate) {
       navigator.vibrate(pattern)
     }
   }
 
-  onCardFlip() { 
-    this.playTone(800, 0.1)
-    this.vibrate([30]) // vibração leve
+  onCardFlip(musicEnabled, sfxVolume, hapticEnabled) { 
+    this.playTone(800, 0.1, 0.1, musicEnabled, sfxVolume)
+    this.vibrate([30], hapticEnabled)
   }
-  onCardMatch() { 
+  onCardMatch(musicEnabled, sfxVolume, hapticEnabled) { 
     // quick arpeggio
-    [900, 1200, 1500].forEach((f, i) => setTimeout(() => this.playTone(f, 0.12, 0.12), i * 90))
-    this.vibrate([50, 30, 50]) // padrão de sucesso
+    [900, 1200, 1500].forEach((f, i) => setTimeout(() => this.playTone(f, 0.12, 0.12, musicEnabled, sfxVolume), i * 90))
+    this.vibrate([50, 30, 50], hapticEnabled)
   }
-  onCardMiss() { 
+  onCardMiss(musicEnabled, sfxVolume, hapticEnabled) { 
     // short descending sweep
-    this.playSweep(900, 280, 0.2, 0.08, 'triangle')
-    this.vibrate([100]) // vibração mais longa para erro
+    this.playSweep(900, 280, 0.2, 0.08, 'triangle', musicEnabled, sfxVolume)
+    this.vibrate([100], hapticEnabled)
   }
-  onGameComplete() { 
+  onGameComplete(musicEnabled, sfxVolume, hapticEnabled) { 
     [800, 1000, 1200, 1400, 1600].forEach((freq, i) => {
-      setTimeout(() => this.playTone(freq, 0.2), i * 150)
+      setTimeout(() => this.playTone(freq, 0.2, 0.15, musicEnabled, sfxVolume), i * 150)
     })
-    this.vibrate([200, 100, 200, 100, 300]) // celebração
+    this.vibrate([200, 100, 200, 100, 300], hapticEnabled)
   }
 
-  playSitioMelody() {
+  playSitioMelody(musicEnabled, sfxVolume) {
     [523, 659, 784, 1047, 880, 698, 784, 659].forEach((freq, i) => {
-      setTimeout(() => this.playTone(freq, 0.4), i * 500)
+      setTimeout(() => this.playTone(freq, 0.4, 0.12, musicEnabled, sfxVolume), i * 500)
     })
   }
 
-  onStreakMilestone(level) {
+  onStreakMilestone(level, musicEnabled, sfxVolume, hapticEnabled) {
     const base = level >= 8 ? 520 : level >= 5 ? 440 : 360
     const steps = level >= 8 ? [0, 4, 7, 12, 16] : level >= 5 ? [0, 4, 7, 12] : [0, 3, 7]
-    steps.forEach((st, i) => setTimeout(() => this.playTone(base * Math.pow(2, st / 12), 0.14, 0.12), i * 110))
-    this.vibrate([40, 20, 60, 20, 80]) // padrão crescente
+    steps.forEach((st, i) => setTimeout(() => this.playTone(base * Math.pow(2, st / 12), 0.14, 0.12, musicEnabled, sfxVolume), i * 110))
+    this.vibrate([40, 20, 60, 20, 80], hapticEnabled)
   }
 
-  onComboBreak() {
-    this.playSweep(1000, 220, 0.18, 0.09, 'sawtooth')
-    this.vibrate([150, 50, 100]) // padrão decrescente
+  onComboBreak(musicEnabled, sfxVolume, hapticEnabled) {
+    this.playSweep(1000, 220, 0.18, 0.09, 'sawtooth', musicEnabled, sfxVolume)
+    this.vibrate([150, 50, 100], hapticEnabled)
   }
 
-  onNearWin() {
-    this.playSweep(420, 980, 0.25, 0.1, 'sine')
-    this.vibrate([30, 30, 30]) // tensão
+  onNearWin(musicEnabled, sfxVolume, hapticEnabled) {
+    this.playSweep(420, 980, 0.25, 0.1, 'sine', musicEnabled, sfxVolume)
+    this.vibrate([30, 30, 30], hapticEnabled)
   }
 
-  startBackgroundMusic() {
-    if (this.isPlayingBackground) return
+  startBackgroundMusic(musicEnabled, sfxVolume) {
+    if (this.isPlayingBackground || !musicEnabled) return
     this.isPlayingBackground = true
     this.backgroundInterval = setInterval(() => {
       if (this.isPlayingBackground && Math.random() > 0.8) {
         const notes = [523, 587, 659, 698, 784, 880, 988]
-        this.playTone(notes[Math.floor(Math.random() * notes.length)], 0.1, 0.05)
+        this.playTone(notes[Math.floor(Math.random() * notes.length)], 0.1, 0.05, musicEnabled, sfxVolume)
       }
     }, 3000)
   }
@@ -186,16 +203,49 @@ export default function MemoryGame({ musicPlaying }) {
   const [streak, setStreak] = useState(0)
   const [audioEngine] = useState(() => new MobileAudioEngine())
   const [isPlaying, setIsPlaying] = useState(!!musicPlaying)
-  const [controlsLocked, setControlsLocked] = useState(false) // liberado antes do início; bloqueia após primeiro clique
+  const [controlsLocked, setControlsLocked] = useState(false)
   const [showOnboarding, setShowOnboarding] = useState(false)
   const [paused, setPaused] = useState(false)
   const [ttsEnabled, setTtsEnabled] = useState(false)
+  const [audioInitialized, setAudioInitialized] = useState(false)
+  const [musicEnabled, setMusicEnabled] = useState(true)
+  const [sfxVolume, setSfxVolume] = useState(0.8)
+  const [hapticEnabled, setHapticEnabled] = useState(true)
+  const [dynamicMusicEnabled, setDynamicMusicEnabled] = useState(true)
   const [gameStarted, setGameStarted] = useState(false)
   const [elapsedMs, setElapsedMs] = useState(0)
   const timerRef = useRef(null)
   const [finalScore, setFinalScore] = useState(null)
   const [gridCols, setGridCols] = useState(3)
   const [cardPx, setCardPx] = useState(120)
+  // Setup audio initialization callback
+  useEffect(() => {
+    console.log('🎵 Setting up audio engine initialization callback...')
+    if (audioEngine) {
+      audioEngine.onInitialized = (success) => {
+        console.log(`🎵 Audio engine initialization: ${success ? 'SUCCESS' : 'FAILED'}`)
+        setAudioInitialized(success)
+        if (success) {
+          console.log('✅ Audio engine ready for game sounds')
+          // Test audio with a brief tone
+          setTimeout(() => {
+            console.log('🔊 Testing audio with brief tone...')
+            audioEngine.playTone(440, 0.1, 0.05, musicEnabled, sfxVolume).catch(err => 
+              console.warn('Test tone failed:', err)
+            )
+          }, 500)
+        } else {
+          console.error('❌ Audio engine failed to initialize - sounds will not work')
+        }
+      }
+      // Trigger initialization immediately
+      console.log('🎵 Triggering audio engine initialization...')
+      audioEngine.initialize()
+    } else {
+      console.error('❌ Audio engine instance not available')
+    }
+  }, [audioEngine, musicEnabled, sfxVolume])
+
   useEffect(() => { setIsPlaying(!!musicPlaying) }, [musicPlaying])
 
   const pairCount = useMemo(() => {
@@ -236,12 +286,12 @@ export default function MemoryGame({ musicPlaying }) {
     }
     
     // Reset musical para exploração com contexto de dificuldade
-    if (window.sitioMusicEngine && (musicPlaying || isPlaying) && audioEngine.dynamicMusicEnabled) {
+    if (window.sitioMusicEngine && (musicPlaying || isPlaying) && dynamicMusicEnabled) {
       try { 
         window.sitioMusicEngine.start('reset', { difficulty })
       } catch { /* noop */ }
     }
-  }, [pairCount, difficulty, musicPlaying, isPlaying, audioEngine])
+  }, [pairCount, difficulty, musicPlaying, isPlaying, audioEngine, dynamicMusicEnabled])
 
   useEffect(() => {
     // ensure theme is applied on mount
@@ -300,7 +350,7 @@ export default function MemoryGame({ musicPlaying }) {
       timerRef.current = setInterval(tick, 1000)
     }
 
-    audioEngine?.onCardFlip()
+    audioEngine?.onCardFlip(musicEnabled, sfxVolume, hapticEnabled)
   const card = cards[cardIndex]
   if (card?.name) speak(card.name)
     const newFlipped = [...flipped, cardIndex]
@@ -314,7 +364,7 @@ export default function MemoryGame({ musicPlaying }) {
 
       setTimeout(() => {
         if (firstCard.name === secondCard.name) {
-          audioEngine?.onCardMatch()
+          audioEngine?.onCardMatch(musicEnabled, sfxVolume, hapticEnabled)
           speak(`Par! ${firstCard.name}`)
           const newMatched = [...matched, firstIndex, secondIndex]
           setMatched(newMatched)
@@ -322,8 +372,8 @@ export default function MemoryGame({ musicPlaying }) {
           setStreak(s => {
             const next = s + 1
             if (next === 3 || next === 5 || next === 8) {
-              audioEngine?.onStreakMilestone(next)
-              if (window.sitioMusicEngine && (musicPlaying || isPlaying) && audioEngine.dynamicMusicEnabled) {
+              audioEngine?.onStreakMilestone(next, musicEnabled, sfxVolume, hapticEnabled)
+              if (window.sitioMusicEngine && (musicPlaying || isPlaying) && dynamicMusicEnabled) {
                 try { 
                   window.sitioMusicEngine.start('action', { difficulty, streak: next }) 
                 } catch { /* music engine unavailable */ }
@@ -345,7 +395,7 @@ export default function MemoryGame({ musicPlaying }) {
           if (newMatched.length === cards.length) {
             setFinished(true)
             setShowCelebration(true)
-            audioEngine?.onGameComplete()
+            audioEngine?.onGameComplete(musicEnabled, sfxVolume, hapticEnabled)
             setControlsLocked(false)
             speak('Você venceu!')
             // Para timer e calcula score final baseado em tempo/movimentos/dificuldade
@@ -360,7 +410,7 @@ export default function MemoryGame({ musicPlaying }) {
             setFinalScore(computed)
             
             // Música especial de vitória
-            if (window.sitioMusicEngine && (musicPlaying || isPlaying) && audioEngine.dynamicMusicEnabled) {
+            if (window.sitioMusicEngine && (musicPlaying || isPlaying) && dynamicMusicEnabled) {
               try { 
                 window.sitioMusicEngine.start('victory', { difficulty, moves, streak })
                 window.sitioMusicEngine.playVictoryMelody()
@@ -372,8 +422,8 @@ export default function MemoryGame({ musicPlaying }) {
           } else {
             // Tensão no último par
             if (cards.length - newMatched.length === 2) {
-              audioEngine?.onNearWin()
-              if (window.sitioMusicEngine && (musicPlaying || isPlaying) && audioEngine.dynamicMusicEnabled) {
+              audioEngine?.onNearWin(musicEnabled, sfxVolume, hapticEnabled)
+              if (window.sitioMusicEngine && (musicPlaying || isPlaying) && dynamicMusicEnabled) {
                 try { 
                   window.sitioMusicEngine.start('tension', { difficulty }) 
                 } catch { /* noop */ }
@@ -381,12 +431,12 @@ export default function MemoryGame({ musicPlaying }) {
             }
           }
         } else {
-          audioEngine?.onCardMiss()
+          audioEngine?.onCardMiss(musicEnabled, sfxVolume, hapticEnabled)
           speak('Tente novamente')
           setScore(prev => Math.max(0, prev - 10))
-          if (streak > 0) audioEngine?.onComboBreak()
+          if (streak > 0) audioEngine?.onComboBreak(musicEnabled, sfxVolume, hapticEnabled)
           setStreak(0)
-          if (window.sitioMusicEngine && (musicPlaying || isPlaying) && audioEngine.dynamicMusicEnabled) {
+          if (window.sitioMusicEngine && (musicPlaying || isPlaying) && dynamicMusicEnabled) {
             try { 
               window.sitioMusicEngine.start('puzzle', { difficulty }) 
             } catch { /* noop */ }
@@ -476,6 +526,34 @@ export default function MemoryGame({ musicPlaying }) {
       >
         ← Sair
       </button>
+      
+      {/* Botão de configurações de áudio */}
+      <button
+        className="settings-btn"
+        onClick={() => setShowAudioSettings(true)}
+        aria-label="Configurações de áudio"
+        title={audioInitialized ? 'Audio funcionando - Clique para configurações' : 'Audio com problemas - Clique para verificar'}
+        style={{
+          position: 'absolute',
+          top: '1rem',
+          right: '1rem',
+          background: audioInitialized ? 'rgba(0,150,0,0.9)' : 'rgba(200,50,0,0.9)',
+          color: 'white',
+          border: audioInitialized ? '2px solid rgba(0,200,0,0.5)' : '2px solid rgba(255,100,0,0.5)',
+          borderRadius: '50%',
+          width: '48px',
+          height: '48px',
+          fontSize: '1.2rem',
+          cursor: 'pointer',
+          zIndex: 10,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          transition: 'all 0.3s ease'
+        }}
+      >
+        {audioInitialized ? '🔊' : '🔇'}
+      </button>
 
       <div className="memory-layout only-grid">
         <div className="grid" style={{ ['--cols']: gridCols, ['--card-size']: `${cardPx}px` }}>
@@ -514,12 +592,33 @@ export default function MemoryGame({ musicPlaying }) {
         <div className="audio-settings-overlay" onClick={() => setShowAudioSettings(false)}>
           <div className="audio-settings-modal" onClick={e => e.stopPropagation()}>
             <h3>Configurações de Áudio</h3>
-            <label><input type="checkbox" checked={audioEngine.musicEnabled} onChange={() => audioEngine.musicEnabled = !audioEngine.musicEnabled} /> Música de Fundo</label>
-            <label><input type="checkbox" checked={audioEngine.dynamicMusicEnabled} onChange={() => audioEngine.dynamicMusicEnabled = !audioEngine.dynamicMusicEnabled} /> Música Dinâmica</label>
-            <label><input type="checkbox" checked={audioEngine.hapticEnabled} onChange={() => audioEngine.hapticEnabled = !audioEngine.hapticEnabled} /> Feedback Tátil (Vibração)</label>
-            <label><input type="checkbox" checked={ttsEnabled} onChange={() => setTtsEnabled(p => !p)} /> Leitor de Tela (TTS)</label>
-            <label>Volume Efeitos: <input type="range" min="0" max="1" step="0.1" defaultValue={audioEngine.sfxVolume} onChange={e => audioEngine.sfxVolume = parseFloat(e.target.value)} /></label>
+            <div style={{ 
+              padding: '0.5rem', 
+              margin: '0.5rem 0', 
+              background: audioInitialized ? '#d4edda' : '#f8d7da',
+              border: `1px solid ${audioInitialized ? '#c3e6cb' : '#f5c6cb'}`,
+              borderRadius: '4px',
+              fontSize: '0.9rem'
+            }}>
+              Status: {audioInitialized ? '✅ Áudio Funcionando' : '❌ Áudio com Problemas'}
+            </div>
+            <label><input type="checkbox" checked={musicEnabled} onChange={() => setMusicEnabled(!musicEnabled)} /> Música de Fundo</label>
+            <label><input type="checkbox" checked={dynamicMusicEnabled} onChange={() => setDynamicMusicEnabled(!dynamicMusicEnabled)} /> Música Dinâmica</label>
+            <label><input type="checkbox" checked={hapticEnabled} onChange={() => setHapticEnabled(!hapticEnabled)} /> Feedback Tátil (Vibração)</label>
+            <label><input type="checkbox" checked={ttsEnabled} onChange={() => setTtsEnabled(!ttsEnabled)} /> Leitor de Tela (TTS)</label>
+            <label>Volume Efeitos: <input type="range" min="0" max="1" step="0.1" value={sfxVolume} onChange={e => setSfxVolume(parseFloat(e.target.value))} /></label>
             <button onClick={() => setShowAudioSettings(false)}>Fechar</button>
+            {!audioInitialized && (
+              <button 
+                onClick={() => {
+                  console.log('🔄 Manual audio re-initialization requested')
+                  audioEngine?.initialize()
+                }}
+                style={{ marginLeft: '0.5rem', background: '#007bff', color: 'white' }}
+              >
+                Tentar Novamente
+              </button>
+            )}
           </div>
         </div>
       )}
