@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cartas Imprimíveis - Sítio</title>
+  <style>
+    body{font-family:system-ui,Segoe UI,Arial,sans-serif;margin:0;padding:1rem}
+    .page{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+    .card{border:3px solid #000;border-radius:12px;aspect-ratio:3/4;display:flex;align-items:center;justify-content:center;font-weight:900}
+    .hint{margin:.75rem 0;font-weight:700}
+    @media print{.hint{display:none} body{padding:0}}
+  </style>
+  <meta name="robots" content="noindex" />
+  <meta name="color-scheme" content="light" />
+  <meta name="description" content="Cartas imprimíveis de alto contraste para o jogo de memória do Sítio." />
+  <link rel="icon" href="favicon.ico" />
+  <meta name="x-robots-tag" content="noai, noimageai" />
+  <meta http-equiv="Permissions-Policy" content="interest-cohort=()" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; img-src data:;" />
+  
+</head>
+<body>
+  <h1>Cartas Imprimíveis</h1>
+  <div class="hint">Imprima em papel A4, recorte nas bordas e use em ambiente claro para melhor detecção.</div>
+  <div class="page" id="grid"></div>
+  <script>
+    const names=[
+      'Emília','Narizinho','Pedrinho','Visconde','Dona Benta','Tia Nastácia',
+      'Saci','Cuca','Rabicó','Tio Barnabé','Quindim','Conselheiro'
+    ];
+    const grid=document.getElementById('grid');
+    const make=(t)=>{const d=document.createElement('div');d.className='card';d.textContent=t;return d}
+    // duas cópias de cada (pares)
+    names.concat(names).forEach(n=>grid.appendChild(make(n)))
+  </script>
+</body>
+</html>
