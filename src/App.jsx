@@ -1,9 +1,51 @@
 import React, { useState, useRef, useEffect, Suspense, lazy } from 'react'
+import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion'
 import './App.css'
 import './utils/achievements'
 import { getInitialTheme, applyTheme, toggleTheme } from './utils/theme'
 
 const MemoryGame = lazy(() => import('./components/MemoryGame'))
+
+// Theme Toggle component
+function ThemeToggle({ theme, setTheme }) {
+  const nextTheme = theme === 'light' ? 'dark' : 'light';
+  return (
+    <button
+      type="button"
+      onClick={() => setTheme(toggleTheme())}
+      className="relative grid place-items-center w-12 h-12 rounded-full glass hover:glass-elevated transition-all focus:outline-none focus-visible:ring-2 ring-[var(--accent)]/50"
+      aria-label={`Mudar para tema ${nextTheme}`}
+    >
+      <span className={`absolute transition-transform duration-500 ${theme === 'dark' ? 'rotate-0 scale-100' : '-rotate-90 scale-0'}`}>
+        🌙
+      </span>
+      <span className={`absolute transition-transform duration-500 ${theme === 'light' ? 'rotate-0 scale-100' : 'rotate-90 scale-0'}`}>
+        ☀️
+      </span>
+    </button>
+  );
+}
+
+// Circular Music Toggle component
+function MusicToggle({ isOn, onToggle, disabled = false, labelOn = 'Pausar música', labelOff = 'Tocar música' }) {
+  return (
+    <button
+      type="button"
+      aria-pressed={isOn}
+      aria-label={isOn ? labelOn : labelOff}
+      disabled={disabled}
+      onClick={onToggle}
+      className={`relative grid place-items-center w-12 h-12 rounded-full transition-all focus:outline-none focus-visible:ring-2 ring-[var(--accent)]/50 shadow-md ${
+        isOn ? 'bg-[var(--secondary)] text-white' : 'glass text-[var(--fg)] hover:glass-elevated'
+      } ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105'}`}
+    >
+      <span className="text-lg">{isOn ? '🔊' : '🎵'}</span>
+      {isOn && (
+        <span className="absolute inset-0 rounded-full animate-ping bg-[var(--secondary)]/25" aria-hidden />
+      )}
+    </button>
+  )
+}
 
 function App() {
   // core state
@@ -27,6 +69,14 @@ function App() {
   const [flipCamera, setFlipCamera] = useState(false)
   const [detectedCards, setDetectedCards] = useState([])
   const [snapshots, setSnapshots] = useState([])
+  const [scrollProgress, setScrollProgress] = useState(0)
+  const [showDifficultyModal, setShowDifficultyModal] = useState(false)
+  const [showAboutModal, setShowAboutModal] = useState(false)
+  // mouse parallax for hero right panel
+  const mx = useMotionValue(0)
+  const my = useMotionValue(0)
+  const tiltX = useTransform(my, [0, 1], [-4, 4])
+  const tiltY = useTransform(mx, [0, 1], [4, -4])
 
   // camera lifecycle
   useEffect(() => {
@@ -82,6 +132,19 @@ function App() {
     if (videoRef.current) videoRef.current.style.transform = flipCamera ? 'scaleX(-1)' : 'none'
   }, [flipCamera])
 
+  // Scroll progress indicator
+  useEffect(() => {
+    const onScroll = () => {
+      const doc = document.documentElement
+      const total = doc.scrollHeight - doc.clientHeight
+      const prog = total > 0 ? (doc.scrollTop / total) : 0
+      setScrollProgress(Math.max(0, Math.min(1, prog)))
+    }
+    window.addEventListener('scroll', onScroll, { passive: true })
+    onScroll()
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
   // turn off camera/mic when leaving vision tab
   useEffect(() => {
     if (view !== 'vision') {
@@ -89,6 +152,12 @@ function App() {
       if (microphoneActive) setMicrophoneActive(false)
     }
   }, [view, cameraActive, microphoneActive])
+
+  // Show difficulty modal on first visit
+  useEffect(() => {
+    const seen = localStorage.getItem('seenDifficultyModal')
+    if (!seen) setShowDifficultyModal(true)
+  }, [])
 
   // Navegação via evento do jogo
   useEffect(() => {
@@ -830,198 +899,323 @@ function App() {
 
   // UI
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[var(--theme-background,#FFF8DC)] via-[var(--theme-background,#FFF8DC)] to-[var(--theme-secondary,#8B4513)]/10 font-sans antialiased">
-      {/* ThemeSelector está disponível dentro do jogo; removido daqui para evitar redundância */}
-      <div className="fixed inset-0 bg-[url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Cpath d=%22M10 10h80v80H10z%22 fill=%22none%22 stroke=%22%23FFD700%22 stroke-width=%220.5%22 opacity=%220.1%22/%3E%3C/svg%3E')] pointer-events-none" />
+  <div className="min-h-screen bg-[var(--bg-solid)] font-sans antialiased relative overflow-hidden">
+  {/* Scroll progress bar */}
+  <div aria-hidden className="fixed top-0 left-0 h-1.5 z-[60]" style={{ width: `${Math.round(scrollProgress*100)}%`, background: 'linear-gradient(90deg, var(--sitio-yellow), var(--sitio-orange))', boxShadow: '0 4px 10px rgba(0,0,0,.25)' }} />
+      <div className="fixed inset-0 opacity-30 pointer-events-none">
+        <div className="absolute inset-0" style={{
+          backgroundImage: `
+            radial-gradient(circle at 20% 20%, var(--sitio-yellow) 0%, transparent 50%),
+            radial-gradient(circle at 80% 80%, var(--sitio-green) 0%, transparent 50%),
+            radial-gradient(circle at 40% 70%, var(--sitio-orange) 0%, transparent 40%)
+          `,
+          filter: 'blur(100px)',
+          opacity: 0.6
+        }}></div>
+      </div>
       
-  {/* Header - oculto no modo jogo imersivo */}
+      <div className="fixed inset-0 bg-[url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Cg opacity=%220.03%22%3E%3Cpath d=%22M10 10h80v80H10z%22 fill=%22none%22 stroke=%22%23FFD700%22 stroke-width=%220.5%22/%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%225%22 fill=%22%23228B22%22/%3E%3C/g%3E%3C/svg%3E')] pointer-events-none opacity-20" />
+      
+  {/* Header simplificado para um visual mais limpo */}
   {view !== 'game' && (
-  <header className="sticky top-0 z-50 bg-gradient-to-r from-[var(--theme-primary,#FFD700)]/20 via-[var(--theme-secondary,#8B4513)]/20 to-[var(--theme-accent,#FF4500)]/20 backdrop-blur-lg border-b border-[var(--theme-primary,#FFD700)]/30">
-        <div className="mx-auto max-w-7xl px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-[var(--theme-primary,#FFD700)] to-[var(--theme-accent,#FF4500)] shadow-lg ring-2 ring-white/20 grid place-items-center text-2xl">
-                🏡
-              </div>
-              <div>
-                <h1 className="text-2xl sm:text-3xl font-black bg-gradient-to-r from-[var(--theme-primary,#FFD700)] to-[var(--theme-accent,#FF4500)] bg-clip-text text-transparent drop-shadow-sm">
-                  Sítio do Pica-Pau IA
-                </h1>
-                <p className="text-sm sm:text-base text-[var(--theme-text,#2F4F2F)]/80 font-semibold">
-                  Jogo de memória com música e visão computacional
-                </p>
-              </div>
-            </div>
-            <nav className="hidden sm:flex items-center gap-3">
-              <button 
-                className={`px-4 py-2.5 rounded-xl font-bold text-sm transition-all transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary,#FFD700)]/50 ${
-                  view==='home'
-                    ? 'bg-[var(--theme-primary,#FFD700)] text-[var(--theme-text,#2F4F2F)] shadow-lg' 
-                    : 'bg-white/10 text-[var(--theme-text,#2F4F2F)] hover:bg-white/20'
-                }`} 
-                onClick={() => setView('home')}
-              >
-                🏠 Início
-              </button>
-              <button 
-                className={`px-4 py-2.5 rounded-xl font-bold text-sm transition-all transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary,#FFD700)]/50 ${
-                  view==='game'
-                    ? 'bg-[var(--theme-primary,#FFD700)] text-[var(--theme-text,#2F4F2F)] shadow-lg' 
-                    : 'bg-white/10 text-[var(--theme-text,#2F4F2F)] hover:bg-white/20'
-                }`} 
-                onClick={() => setView('game')}
-              >
-                🎮 Jogo
-              </button>
-              <button 
-                className={`px-4 py-2.5 rounded-xl font-bold text-sm transition-all transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary,#FFD700)]/50 ${
-                  view==='vision'
-                    ? 'bg-[var(--theme-primary,#FFD700)] text-[var(--theme-text,#2F4F2F)] shadow-lg' 
-                    : 'bg-white/10 text-[var(--theme-text,#2F4F2F)] hover:bg-white/20'
-                }`} 
-                onClick={() => setView('vision')}
-              >
-                📷 Câmera
-              </button>
-              <button 
-                className="px-3 py-2 rounded-xl font-bold text-sm bg-white/10 hover:bg-white/20 transition-colors"
-                aria-label="Alternar tema claro/escuro"
-                onClick={() => setTheme(toggleTheme())}
-              >
-                {theme === 'dark' ? '🌙' : '☀️'}
-              </button>
-              {view !== 'game' && (
-                <button 
-                  className={`px-4 py-2.5 rounded-xl font-bold text-sm transition-all transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary,#FFD700)]/50 ${
-                    musicPlaying 
-                      ? 'bg-red-500 text-white shadow-lg animate-pulse' 
-                      : 'bg-[var(--theme-secondary,#8B4513)] text-white hover:brightness-110'
-                  }`} 
-                  onClick={() => setMusicPlaying(!musicPlaying)}
-                >
-                  {musicPlaying ? '🔇 Pausar' : '🎵 Música'}
-                </button>
-              )}
-            </nav>
-          </div>
-        </div>
-      </header>
+    <motion.header
+      initial={{ y: -100 }}
+      animate={{ y: 0 }}
+      transition={{ type: 'spring', stiffness: 70, damping: 20, delay: 0.2 }}
+      className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between p-3 sm:p-4 glass"
+    >
+      <div className="flex items-center gap-2">
+        <motion.div 
+          whileHover={{ rotate: -5, scale: 1.1 }}
+          className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-gradient-to-br from-[var(--sitio-yellow)] to-[var(--sitio-orange)] grid place-items-center text-2xl shadow-lg"
+        >
+          🏡
+        </motion.div>
+        <h1 className="text-lg sm:text-xl font-black text-with-bg hidden sm:block">Sítio IA</h1>
+      </div>
+      <div className="flex items-center gap-2">
+        <button 
+          onClick={() => setShowAboutModal(true)}
+          className="px-3 py-2 sm:px-4 sm:py-2 rounded-xl glass hover:glass-elevated text-[var(--fg)] font-semibold transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-yellow-400 text-xs sm:text-sm"
+          aria-label="Sobre o projeto"
+        >
+          <span className="hidden sm:inline">Quem Somos</span>
+          <span className="sm:hidden text-lg">ℹ️</span>
+        </button>
+        <ThemeToggle theme={theme} setTheme={setTheme} />
+        <MusicToggle isOn={musicPlaying} onToggle={() => setMusicPlaying(v => !v)} />
+      </div>
+    </motion.header>
   )}
 
-    {/* Home immersive landing with scroll snapping and carousel */}
-    {view === 'home' && (
-      <main className="snap-y" aria-label="Início">
-        {/* HERO */}
-        <section className="snap-start" aria-labelledby="hero-title">
-          <div className="mx-auto max-w-6xl px-4 py-14 sm:py-20">
-            <div className="glass rounded-3xl p-8 sm:p-12 text-center">
-              <h2 id="hero-title" className="text-4xl sm:text-6xl font-black tracking-tight">Sítio do Pica-Pau IA</h2>
-              <p className="mt-4 text-lg opacity-80 max-w-2xl mx-auto">Jogo de memória com trilha procedural brasileira, acessível e mobile‑first.</p>
-              <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-                <button className="px-6 py-3 rounded-2xl bg-black text-white font-bold hover:brightness-110 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-400" onClick={() => setView('game')}>🎮 Jogar agora</button>
-                <button className="px-6 py-3 rounded-2xl bg-white/10 text-current border border-[var(--border)] font-semibold hover:bg-white/20 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-400" onClick={() => setView('vision')}>📷 Câmera</button>
-                <button className={`px-6 py-3 rounded-2xl ${musicPlaying ? 'bg-red-500 text-white' : 'bg-white/10 border border-[var(--border)]'} font-semibold hover:brightness-110 transition-colors`}
-                  onClick={async () => { try { await musicEngineRef.current?.ensureStart?.() } catch {}; setMusicPlaying(v => !v) }}>
-                  {musicPlaying ? '🔇 Parar música' : '🎵 Música' }
-                </button>
-                <button aria-label="Alternar tema" className="px-4 py-3 rounded-2xl bg-white/10 border border-[var(--border)]" onClick={() => setTheme(toggleTheme())}>{theme === 'dark' ? '🌙' : '☀️'}</button>
+      {/* Home immersive landing with scroll snapping and carousel */}
+  {view === 'home' && (
+    <main className="snap-y relative z-10" aria-label="Início">
+      {/* HERO */}
+      <section className="snap-start min-h-[95vh] flex items-center justify-center relative" aria-labelledby="hero-title">
+        {/* Elementos decorativos infantis */}
+        <div className="absolute inset-0 pointer-events-none">
+          <motion.div 
+            className="absolute top-20 left-10 text-4xl"
+            animate={{ rotate: 360, scale: [1, 1.2, 1] }}
+            transition={{ duration: 4, repeat: Infinity }}
+          >
+            🌟
+          </motion.div>
+          <motion.div 
+            className="absolute top-32 right-20 text-3xl"
+            animate={{ y: [0, -10, 0] }}
+            transition={{ duration: 3, repeat: Infinity }}
+          >
+            🌈
+          </motion.div>
+          <motion.div 
+            className="absolute bottom-40 left-20 text-2xl"
+            animate={{ rotate: -360, scale: [1, 1.1, 1] }}
+            transition={{ duration: 5, repeat: Infinity }}
+          >
+            🎈
+          </motion.div>
+          <motion.div 
+            className="absolute bottom-32 right-10 text-3xl"
+            animate={{ x: [0, 5, 0] }}
+            transition={{ duration: 2, repeat: Infinity }}
+          >
+            🦋
+          </motion.div>
+        </div>
+        <div className="mx-auto max-w-5xl px-4 py-8 w-full">
+          <div className="glass-elevated rounded-3xl p-8 sm:p-12 relative overflow-hidden text-center">
+            <div className="absolute inset-0 bg-gradient-to-br from-[var(--sitio-yellow)]/10 via-[var(--sitio-green)]/5 to-[var(--sitio-blue)]/10 pointer-events-none"></div>
+            <div className="relative z-10">
+              <motion.div 
+                className="text-8xl mb-6"
+                animate={{ rotate: [0, 5, -5, 0] }}
+                transition={{ duration: 3, repeat: Infinity }}
+              >
+                🏡
+              </motion.div>
+              <h2 id="hero-title" className="text-5xl sm:text-7xl font-black tracking-tight mb-6">
+                <span className="bg-gradient-to-r from-[var(--sitio-yellow)] via-[var(--sitio-orange)] to-[var(--sitio-red)] bg-clip-text text-transparent drop-shadow-lg">
+                  Sítio do Pica-Pau IA
+                </span>
+              </h2>
+              <p className="text-xl text-[var(--fg-muted)] max-w-2xl mx-auto leading-relaxed mb-8 text-with-bg">
+                Uma aventura digital no mundo de <strong>Monteiro Lobato</strong>
+                <br />
+                <span className="text-lg opacity-80">Jogo de memória com música e IA • Acessível • Mobile-first</span>
+              </p>
+              
+              {/* Botão principal destacado e piscante */}
+              <div className="mt-8 flex flex-col items-center gap-4">
+                <motion.button 
+                  className="group relative px-12 py-6 rounded-3xl bg-gradient-to-r from-[var(--sitio-green)] via-[#32CD32] to-[var(--sitio-green)] text-white font-black text-2xl hover:shadow-2xl hover:scale-110 transition-all duration-300 focus:outline-none focus-visible:ring-4 focus-visible:ring-green-400 animate-pulse shadow-lg" 
+                  onClick={() => { if (!localStorage.getItem('memoryDifficulty')) { setShowDifficultyModal(true) } else { setView('game') } }}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.98 }}
+                  animate={{ 
+                    boxShadow: [
+                      "0 0 20px rgba(50, 205, 50, 0.5)",
+                      "0 0 40px rgba(50, 205, 50, 0.8)", 
+                      "0 0 20px rgba(50, 205, 50, 0.5)"
+                    ]
+                  }}
+                  transition={{ 
+                    boxShadow: { duration: 2, repeat: Infinity },
+                    default: { type: 'spring', stiffness: 260, damping: 18 }
+                  }}
+                >
+                  <span className="flex items-center gap-3">
+                    🎮 <span>JOGAR AGORA</span>
+                    <span className="group-hover:translate-x-2 transition-transform text-3xl">🚀</span>
+                  </span>
+                  <div className="absolute inset-0 rounded-3xl bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                </motion.button>
+                
+                {/* Botões secundários removidos para um design mais limpo e focado */}
               </div>
-              <div className="mt-3 flex items-center gap-2 justify-center text-sm opacity-70">
-                <span aria-hidden className={`inline-flex h-2 w-2 rounded-full ${musicEngineRef.current?.isPlaying ? 'bg-green-500' : 'bg-gray-400'}`}></span>
-                <span role="status">{musicEngineRef.current?.isPlaying ? 'Trilha ativa' : 'Trilha inativa'}</span>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* FEATURES CAROUSEL */}
-        <section className="snap-start" aria-label="Destaques do jogo">
-          <div className="mx-auto max-w-6xl px-0 sm:px-4 py-6">
-            <div className="overflow-x-auto no-scrollbar snap-x px-4">
-              <div className="min-w-[120%] sm:min-w-0 grid grid-flow-col auto-cols-[80%] sm:auto-cols-[360px] gap-4">
+              
+              {/* Badges decorativos centralizados */}
+              <div className="mt-8 flex flex-wrap justify-center gap-3">
                 {[
-                  { title: 'Música dinâmica', desc: 'Trilha muda com seus acertos', icon: '🎵' },
-                  { title: 'IA opcional', desc: 'Câmera com reconhecimento', icon: '🤖' },
-                  { title: 'Acessível', desc: 'Teclado, TTS e alto contraste', icon: '♿' },
-                  { title: 'Mobile‑first', desc: 'Rápido e responsivo', icon: '📱' }
-                ].map((f, i) => (
-                  <article key={i} className="glass rounded-2xl p-5 h-full snap-center parallax" role="group" aria-roledescription="slide">
-                    <div className="text-3xl" aria-hidden>{f.icon}</div>
-                    <h3 className="mt-2 text-xl font-extrabold">{f.title}</h3>
-                    <p className="opacity-80">{f.desc}</p>
-                  </article>
+                  { label: 'IA opcional', grad: 'from-[var(--sitio-blue)] to-[var(--sitio-green)]', icon: '🤖' },
+                  { label: 'Trilha dinâmica', grad: 'from-[var(--sitio-yellow)] to-[var(--sitio-orange)]', icon: '🎵' },
+                  { label: 'Acessível', grad: 'from-[var(--sitio-green)] to-[var(--sitio-yellow)]', icon: '♿' }
+                ].map((b, i) => (
+                  <motion.span 
+                    key={i} 
+                    className={`px-4 py-2 rounded-full text-sm font-bold border border-white/30 bg-gradient-to-r ${b.grad} text-white shadow-lg`}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.1 }}
+                  >
+                    {b.icon} {b.label}
+                  </motion.span>
                 ))}
               </div>
             </div>
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* DIFFICULTY PICKER */}
-        <section className="snap-start" aria-label="Escolher dificuldade">
-          <div className="mx-auto max-w-6xl px-4 py-10">
-            <div className="glass rounded-3xl p-6">
-              <h3 className="text-2xl font-black">Dificuldade</h3>
-              <p className="opacity-80">Escolha antes de começar o jogo.</p>
-              <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3" role="radiogroup" aria-label="Dificuldade">
+      {/* FEATURES GRID (movido para 'Quem somos') */}
+      {false && (
+      <section className="snap-start py-16" aria-label="Destaques do jogo">
+        <div className="mx-auto max-w-6xl px-4">
+          <motion.div className="text-center mb-12" initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.4 }} transition={{ duration: .6, ease: [0.22,1,0.36,1] }}>
+            <h3 className="text-4xl font-black bg-gradient-to-r from-[var(--sitio-green)] to-[var(--sitio-yellow)] bg-clip-text text-transparent mb-4">✨ Recursos Especiais</h3>
+            <p className="text-[var(--fg-muted)] max-w-2xl mx-auto text-lg">Explore um mundo onde tecnologia e literatura se encontram</p>
+          </motion.div>
+          <motion.div 
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+            initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.3 }}
+            variants={{ hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0, transition: { staggerChildren: 0.08 } } }}
+          >
+            {[
+              { title: 'Música dinâmica', desc: 'Trilha que evolui com seus acertos, como uma sinfonia rural brasileira', icon: '🎵', gradient: 'from-[var(--sitio-yellow)] to-[var(--sitio-orange)]' },
+              { title: 'IA opcional', desc: 'Câmera com reconhecimento inteligente para uma experiência híbrida', icon: '🤖', gradient: 'from-[var(--sitio-blue)] to-[var(--sitio-green)]' },
+              { title: 'Acessível', desc: 'Navegação por teclado, TTS e alto contraste para todos', icon: '♿', gradient: 'from-[var(--sitio-green)] to-[var(--sitio-yellow)]' }
+            ].map((f, i) => (
+              <motion.article key={i} variants={{ hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0 } }} className="glass-elevated rounded-2xl p-6 h-full text-center group hover:scale-105 transition-all duration-500" role="group">
+                <div className={`inline-flex p-4 rounded-2xl bg-gradient-to-r ${f.gradient} text-white text-3xl mb-4 group-hover:rotate-3 transition-transform duration-300`}>
+                  {f.icon}
+                </div>
+                <h4 className="text-xl font-extrabold text-[var(--fg)] mb-3">{f.title}</h4>
+                <p className="text-[var(--fg-muted)] leading-relaxed">{f.desc}</p>
+              </motion.article>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+      )}
+
+      {/* DIFFICULTY PICKER */}
+      <section className="snap-start py-16" aria-label="Escolher dificuldade">
+        <div className="mx-auto max-w-4xl px-4">
+          <div className="glass-elevated rounded-3xl p-8 relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-[var(--sitio-green)]/5 via-transparent to-[var(--sitio-yellow)]/5 pointer-events-none"></div>
+            <div className="relative z-10">
+            <div className="text-center mb-8">
+              <div className="text-5xl mb-4">🎯</div>
+              <h3 className="text-4xl font-black bg-gradient-to-r from-[var(--sitio-blue)] to-[var(--sitio-green)] bg-clip-text text-transparent mb-4">Escolha sua Aventura</h3>
+              <p className="text-[var(--fg-muted)] max-w-md mx-auto text-lg">Selecione o nível de desafio para começar</p>
+            </div>
+              <motion.div
+                className="grid grid-cols-1 md:grid-cols-3 gap-4"
+                role="radiogroup"
+                aria-label="Dificuldade"
+                initial="hidden"
+                whileInView="show"
+                viewport={{ once: true, amount: 0.3 }}
+                variants={{
+                  hidden: { opacity: 0, y: 12 },
+                  show: {
+                    opacity: 1,
+                    y: 0,
+                    transition: { staggerChildren: 0.08, ease: [0.22, 1, 0.36, 1], duration: 0.5 }
+                  }
+                }}
+              >
                 {[
-                  { key: 'easy', label: 'Fácil', hint: '3 pares, grade 3×2' },
-                  { key: 'medium', label: 'Médio', hint: '6 pares' },
-                  { key: 'hard', label: 'Difícil', hint: '12 pares' }
+                  { key: 'easy', label: 'Fácil', hint: '3 pares • grade 3×2', icon: '🌱', desc: 'Perfeito para iniciantes' },
+                  { key: 'medium', label: 'Médio', hint: '6 pares • mais desafiador', icon: '🌿', desc: 'Para aventureiros experientes' },
+                  { key: 'hard', label: 'Difícil', hint: '12 pares • máximo desafio', icon: '🌳', desc: 'Para mestres da memória' }
                 ].map(opt => (
-                  <label key={opt.key} className={`glass rounded-2xl p-4 cursor-pointer border-2 ${pendingDifficulty===opt.key?'border-emerald-400':'border-transparent'}`}>
+                  <motion.label
+                    key={opt.key}
+                    variants={{ hidden: { opacity: 0, y: 14 }, show: { opacity: 1, y: 0 } }}
+                    whileHover={{ scale: 1.04, rotate: 0.5 }}
+                    whileTap={{ scale: 0.98 }}
+                    className={`glass-elevated rounded-2xl p-6 cursor-pointer border-2 transition-all duration-300 group ${
+                    pendingDifficulty===opt.key
+                      ? 'border-[var(--accent)] bg-gradient-to-br from-[var(--accent)]/10 to-transparent shadow-xl' 
+                      : 'border-transparent hover:border-[var(--accent)]/50'
+                  }`}
+                  >
                     <input type="radio" className="sr-only" name="difficulty" value={opt.key}
                       checked={pendingDifficulty===opt.key}
                       onChange={() => { setPendingDifficulty(opt.key); localStorage.setItem('memoryDifficulty', opt.key) }}
                       aria-checked={pendingDifficulty===opt.key}
                     />
-                    <div className="flex items-start gap-3">
-                      <span className="text-2xl" aria-hidden>🃏</span>
-                      <div>
-                        <div className="font-extrabold">{opt.label}</div>
-                        <div className="opacity-75 text-sm">{opt.hint}</div>
-                      </div>
+                    <div className="text-center">
+                      <motion.div className="text-4xl mb-3" initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ duration: 0.35 }}>{opt.icon}</motion.div>
+                      <div className="font-black text-xl text-[var(--fg)] mb-2">{opt.label}</div>
+                      <div className="text-[var(--fg-muted)] text-sm mb-3">{opt.hint}</div>
+                      <div className="text-xs text-[var(--fg-muted)] italic">{opt.desc}</div>
+                      {pendingDifficulty===opt.key && (
+                        <motion.div className="mt-3 flex justify-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                          <span className="inline-flex px-3 py-1 rounded-full bg-[var(--accent)] text-[var(--sitio-brown)] text-xs font-bold">
+                            ✓ Selecionado
+                          </span>
+                        </motion.div>
+                      )}
                     </div>
-                  </label>
+                  </motion.label>
                 ))}
-              </div>
-              <div className="mt-5 flex gap-3 justify-end">
-                <button className="px-5 py-3 rounded-xl border border-[var(--border)] hover:bg-white/10" onClick={() => setView('vision')}>📷 Ver câmera</button>
-                <button className="px-5 py-3 rounded-xl bg-black text-white font-bold hover:brightness-110" onClick={() => setView('game')}>Começar ▶</button>
+              </motion.div>
+              <div className="mt-8 flex flex-wrap gap-4 justify-center">
+                <button className="px-6 py-3 rounded-xl glass hover:glass-elevated transition-all duration-300" 
+                  onClick={() => setView('vision')}>
+                  📷 Testar Câmera
+                </button>
+                <button className="group px-8 py-4 rounded-xl bg-gradient-to-r from-[var(--sitio-green)] to-[var(--sitio-yellow)] text-[var(--sitio-brown)] font-bold hover:shadow-xl hover:scale-105 transition-all duration-300" 
+                  onClick={() => setView('game')}>
+                  <span className="flex items-center gap-2">
+                    🚀 <span>Começar Aventura</span>
+                    <span className="group-hover:translate-x-1 transition-transform">→</span>
+                  </span>
+                </button>
               </div>
             </div>
           </div>
-        </section>
-      </main>
+        </div>
+      </section>
+    </main>
     )}
   {/* Vision controls */}
   {view === 'vision' && (
-        <div className="mx-auto max-w-5xl px-4 py-4 bg-white/30 rounded-2xl backdrop-blur-md border border-[var(--theme-primary,#FFD700)]/30 mb-4">
-          <div className="flex flex-wrap gap-3 items-center">
-            <button className={`px-4 py-2.5 rounded-xl font-semibold transition-all ${cameraActive?'bg-red-500 text-white shadow-lg':'bg-[var(--theme-primary,#FFD700)] text-[var(--theme-text,#2F4F2F)] hover:brightness-110'} focus:outline-none focus-visible:ring-2 ring-[var(--theme-primary,#FFD700)]/50`} onClick={() => setCameraActive(!cameraActive)}>
-              {cameraActive ? '📷 Desligar Câmera' : '📷 Ligar Câmera'}
-            </button>
-            <button className="px-4 py-2.5 rounded-xl bg-white/10 backdrop-blur-sm text-[var(--theme-text,#2F4F2F)] font-semibold hover:bg-white/20 border border-[var(--theme-primary,#FFD700)]/30 transition-all focus:outline-none focus-visible:ring-2 ring-[var(--theme-primary,#FFD700)]/50" onClick={() => setFlipCamera(f => !f)}>
-              {flipCamera ? '🔄 Desespelhar' : '🔄 Espelhar'}
-            </button>
-            <button className="px-4 py-2.5 rounded-xl bg-white/10 backdrop-blur-sm text-[var(--theme-text,#2F4F2F)] font-semibold hover:bg-white/20 disabled:opacity-40 border border-[var(--theme-primary,#FFD700)]/30 transition-all focus:outline-none focus-visible:ring-2 ring-[var(--theme-primary,#FFD700)]/50" disabled={!cameraActive || videoDevices.length < 2}
-              onClick={() => {
-                if (videoDevices.length === 0) return
-                const currentIndex = videoDevices.findIndex(d => d.deviceId === selectedDeviceId)
-                const nextIndex = (currentIndex + 1) % videoDevices.length
-                setSelectedDeviceId(videoDevices[nextIndex].deviceId)
-              }}>
-              📹 Trocar Câmera {videoDevices.length > 0 ? `(${(videoDevices.findIndex(d => d.deviceId === selectedDeviceId))+1}/${videoDevices.length})` : ''}
-            </button>
-            <button className={`px-4 py-2.5 rounded-xl font-semibold transition-all ${microphoneActive?'bg-red-500 text-white shadow-lg animate-pulse':'bg-[var(--theme-secondary,#8B4513)] text-white hover:brightness-110'} focus:outline-none focus-visible:ring-2 ring-[var(--theme-primary,#FFD700)]/50`} onClick={() => setMicrophoneActive(!microphoneActive)}>
-              {microphoneActive ? '🎤 Desligar Microfone' : '🎤 Ligar Microfone'}
-            </button>
-            <button className="px-4 py-2.5 rounded-xl bg-white/10 backdrop-blur-sm text-[var(--theme-text,#2F4F2F)] font-semibold hover:bg-white/20 border border-[var(--theme-primary,#FFD700)]/30 transition-all focus:outline-none focus-visible:ring-2 ring-[var(--theme-primary,#FFD700)]/50" onClick={() => setUseAI(v => !v)}>
-              {useAI ? '🤖 Desativar IA' : '🤖 Ativar IA'}
-            </button>
-            <div className="flex items-end gap-1 ml-auto bg-[var(--theme-secondary,#8B4513)]/20 rounded-lg px-3 py-2">
-              {vizData.map((h, i) => (
-                <div key={i} className="w-1.5 bg-gradient-to-t from-[var(--theme-primary,#FFD700)] to-[var(--theme-accent,#FF4500)] rounded-t shadow-sm" style={{ height: `${h}px` }} />
-              ))}
+        <div className="relative z-10 mx-auto max-w-5xl px-4 py-4">
+          <div className="glass rounded-2xl p-4 mb-4">
+            <div className="flex flex-wrap gap-3 items-center">
+              <button className={`px-4 py-2.5 rounded-xl font-semibold transition-all ${
+                cameraActive
+                  ? 'bg-[var(--danger)] text-white shadow-lg'
+                  : 'bg-[var(--accent)] text-[var(--sitio-brown)] hover:brightness-110'
+              } focus:outline-none focus-visible:ring-2 ring-[var(--accent)]/50`} 
+                onClick={() => setCameraActive(!cameraActive)}>
+                {cameraActive ? '📷 Desligar Câmera' : '📷 Ligar Câmera'}
+              </button>
+              <button className="glass rounded-xl px-4 py-2.5 text-[var(--fg)] font-semibold hover:glass-elevated border border-[var(--border)] transition-all focus:outline-none focus-visible:ring-2 ring-[var(--accent)]/50" 
+                onClick={() => setFlipCamera(f => !f)}>
+                {flipCamera ? '🔄 Desespelhar' : '🔄 Espelhar'}
+              </button>
+              <button className="glass rounded-xl px-4 py-2.5 text-[var(--fg)] font-semibold hover:glass-elevated disabled:opacity-40 border border-[var(--border)] transition-all focus:outline-none focus-visible:ring-2 ring-[var(--accent)]/50" 
+                disabled={!cameraActive || videoDevices.length < 2}
+                onClick={() => {
+                  if (videoDevices.length === 0) return
+                  const currentIndex = videoDevices.findIndex(d => d.deviceId === selectedDeviceId)
+                  const nextIndex = (currentIndex + 1) % videoDevices.length
+                  setSelectedDeviceId(videoDevices[nextIndex].deviceId)
+                }}>
+                📹 Trocar Câmera {videoDevices.length > 0 ? `(${(videoDevices.findIndex(d => d.deviceId === selectedDeviceId))+1}/${videoDevices.length})` : ''}
+              </button>
+              <button className={`px-4 py-2.5 rounded-xl font-semibold transition-all ${
+                microphoneActive
+                  ? 'bg-[var(--danger)] text-white shadow-lg animate-pulse'
+                  : 'bg-[var(--secondary)] text-white hover:brightness-110'
+              } focus:outline-none focus-visible:ring-2 ring-[var(--accent)]/50`} 
+                onClick={() => setMicrophoneActive(!microphoneActive)}>
+                {microphoneActive ? '🎤 Desligar Microfone' : '🎤 Ligar Microfone'}
+              </button>
+              <button className="glass rounded-xl px-4 py-2.5 text-[var(--fg)] font-semibold hover:glass-elevated border border-[var(--border)] transition-all focus:outline-none focus-visible:ring-2 ring-[var(--accent)]/50" 
+                onClick={() => setUseAI(v => !v)}>
+                {useAI ? '🤖 Desativar IA' : '🤖 Ativar IA'}
+              </button>
+              <div className="flex items-end gap-1 ml-auto glass rounded-lg px-3 py-2">
+                {vizData.map((h, i) => (
+                  <div key={i} className="w-1.5 bg-gradient-to-t from-[var(--accent)] to-[var(--sitio-orange)] rounded-t shadow-sm" style={{ height: `${h}px` }} />
+                ))}
+              </div>
             </div>
           </div>
         </div>
@@ -1084,6 +1278,106 @@ function App() {
         )}
       </div>
       
+      {/* Difficulty Modal */}
+      <AnimatePresence>
+        {showDifficultyModal && (
+          <motion.div
+            className="fixed inset-0 z-[70] grid place-items-center p-4"
+            role="dialog" aria-modal="true" aria-labelledby="difficulty-title"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <div className="absolute inset-0 bg-black/40" onClick={() => { setShowDifficultyModal(false); localStorage.setItem('seenDifficultyModal','1') }} />
+            <motion.div
+              className="relative glass-elevated rounded-3xl max-w-lg w-full p-6"
+              initial={{ y: 30, opacity: 0, scale: 0.98 }}
+              animate={{ y: 0, opacity: 1, scale: 1 }}
+              exit={{ y: 30, opacity: 0, scale: 0.98 }}
+              transition={{ type: 'spring', stiffness: 220, damping: 22 }}
+            >
+              <h3 id="difficulty-title" className="text-2xl font-black text-[var(--fg)] mb-2">Escolha sua aventura</h3>
+              <p className="text-[var(--fg-muted)] mb-4">Selecione o nível de desafio para começar a jogar.</p>
+              <div role="radiogroup" aria-label="Dificuldade" className="grid gap-3">
+                {[
+                  { key: 'easy', label: 'Fácil', hint: '3 pares • 3×2', icon: '🌱' },
+                  { key: 'medium', label: 'Médio', hint: '6 pares', icon: '🌿' },
+                  { key: 'hard', label: 'Difícil', hint: '12 pares', icon: '🌳' }
+                ].map(opt => (
+                  <label key={opt.key} className={`glass rounded-xl p-4 cursor-pointer border-2 ${pendingDifficulty===opt.key ? 'border-[var(--accent)]' : 'border-transparent hover:border-[var(--accent)]/50'}`}>
+                    <input type="radio" className="sr-only" name="difficulty-modal" value={opt.key}
+                      checked={pendingDifficulty===opt.key}
+                      onChange={() => { setPendingDifficulty(opt.key); localStorage.setItem('memoryDifficulty', opt.key) }}
+                    />
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">{opt.icon}</span>
+                      <div>
+                        <div className="font-extrabold text-[var(--fg)]">{opt.label}</div>
+                        <div className="text-[var(--fg-muted)] text-sm">{opt.hint}</div>
+                      </div>
+                      {pendingDifficulty===opt.key && (
+                        <span className="ml-auto inline-flex px-2 py-1 rounded-full bg-[var(--accent)] text-[var(--sitio-brown)] text-xs font-bold">✓</span>
+                      )}
+                    </div>
+                  </label>
+                ))}
+              </div>
+              <div className="mt-5 flex gap-3 justify-end">
+                <button className="px-4 py-2 rounded-xl glass" onClick={() => { setShowDifficultyModal(false); localStorage.setItem('seenDifficultyModal','1') }}>Cancelar</button>
+                <button className="px-5 py-2 rounded-xl bg-gradient-to-r from-[var(--sitio-yellow)] to-[var(--sitio-orange)] text-[var(--sitio-brown)] font-bold" onClick={() => { setShowDifficultyModal(false); localStorage.setItem('seenDifficultyModal','1'); setView('game') }}>Começar</button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* About / Quem somos Modal */}
+      <AnimatePresence>
+        {showAboutModal && (
+          <motion.div
+            className="fixed inset-0 z-[75] grid place-items-center p-4"
+            role="dialog" aria-modal="true" aria-labelledby="about-title"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <div className="absolute inset-0 bg-black/40" onClick={() => setShowAboutModal(false)} />
+            <motion.div
+              className="relative glass-elevated rounded-3xl max-w-2xl w-full p-6"
+              initial={{ y: 30, opacity: 0, scale: 0.98 }}
+              animate={{ y: 0, opacity: 1, scale: 1 }}
+              exit={{ y: 30, opacity: 0, scale: 0.98 }}
+              transition={{ type: 'spring', stiffness: 220, damping: 22 }}
+            >
+              <h3 id="about-title" className="text-2xl font-black mb-2">Quem somos</h3>
+              <p className="text-[var(--fg-muted)] mb-4">Sítio do Pica-Pau IA é um jogo de memória com música procedural brasileira, visão computacional opcional e acessibilidade embutida.</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+                {[
+                  { title: '🎵 Música dinâmica', desc: 'Trilha que evolui com seus acertos' },
+                  { title: '🤖 IA opcional', desc: 'Câmera com reconhecimento inteligente' },
+                  { title: '♿ Acessível', desc: 'Teclado, TTS e alto contraste' },
+                  { title: '📱 Mobile-first', desc: 'Rápido e responsivo' }
+                ].map((f,i) => (
+                  <div key={i} className="glass rounded-xl p-3">
+                    <div className="font-extrabold">{f.title}</div>
+                    <div className="text-[var(--fg-muted)] text-sm">{f.desc}</div>
+                  </div>
+                ))}
+              </div>
+              <div className="mb-2 font-bold">Tecnologias</div>
+              <div className="flex flex-wrap gap-2 mb-4">
+                {['React','Vite','Framer Motion','Web Audio','MediaDevices','ARIA'].map((t, i) => (
+                  <span key={i} className="px-3 py-1 rounded-full text-xs font-bold bg-gradient-to-r from-[var(--sitio-yellow)] to-[var(--sitio-orange)] text-[var(--sitio-brown)]">{t}</span>
+                ))}
+              </div>
+              <div className="flex justify-end gap-2">
+                <a href="https://github.com/TauanRibeiro/sitio-do-pica-pau-ia" target="_blank" rel="noreferrer" className="px-4 py-2 rounded-xl glass">Repositório</a>
+                <button className="px-4 py-2 rounded-xl bg-gradient-to-r from-[var(--sitio-green)] to-[var(--sitio-blue)] text-white font-bold" onClick={() => setShowAboutModal(false)}>Fechar</button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
       {/* Seção de controles adicionais antes do footer */}
       {view !== 'game' && (
         <section className="relative mt-8 mb-8">
@@ -1116,11 +1410,19 @@ function App() {
       )}
       
       {view !== 'game' && (
-      <footer className="relative mt-2 border-t border-[var(--theme-primary,#FFD700)]/30">
-        <div className="mx-auto max-w-5xl px-4 py-6 text-[var(--theme-text,#2F4F2F)] text-sm flex flex-wrap items-center justify-between gap-2">
-          <span className="inline-flex items-center gap-2 font-extrabold text-[var(--theme-text,#2F4F2F)] text-with-bg"><span className="h-2.5 w-2.5 rounded-full bg-[var(--theme-primary,#FFD700)] shadow-sm" /> 👩‍🎨 Malie • ⚡ Tauan • 🧙‍♀️ Carla • 👵 Vovó Jane</span>
-          <span className="font-extrabold text-with-bg">🏫 Projeto para Feira de Ciências - Colégio Meta, Sobradinho-DF</span>
+      <footer className="relative mt-6 border-t border-[var(--theme-primary,#FFD700)]/30">
+        <div className="mx-auto max-w-6xl px-4 py-6 text-[var(--theme-text,#2F4F2F)] text-sm flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2 font-extrabold text-[var(--theme-text,#2F4F2F)] text-with-bg">
+            <span className="h-2.5 w-2.5 rounded-full bg-[var(--theme-primary,#FFD700)] shadow-sm" />
+            👩‍🎨 Malie • ⚡ Tauan • 🧙‍♀️ Carla • 👵 Vovó Jane
+          </div>
+          <div className="flex items-center gap-3">
+            <a className="glass px-3 py-1.5 rounded-lg" href="https://github.com/TauanRibeiro/sitio-do-pica-pau-ia" target="_blank" rel="noreferrer">🌐 Repositório</a>
+            <a className="glass px-3 py-1.5 rounded-lg" href="#acessibilidade">♿ Acessibilidade</a>
+            <button className="glass px-3 py-1.5 rounded-lg" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>⬆️ Topo</button>
+          </div>
         </div>
+        <div className="mx-auto max-w-6xl px-4 pb-6 text-center font-extrabold text-with-bg">🏫 Projeto para Feira de Ciências - Colégio Meta, Sobradinho-DF</div>
       </footer>
       )}
     </div>

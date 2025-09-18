@@ -81,53 +81,114 @@ html, body {
 
 /* Theme system using [data-theme] with smooth transitions */
 :root {
-  --bg: #ffffff;
-  --fg: #111111;
-  --surface: rgba(255,255,255,0.7);
-  --border: rgba(0,0,0,0.12);
-  --shadow: 0 10px 30px rgba(0,0,0,0.15);
-  --glass: blur(12px) saturate(140%);
+  /* Paleta do Sítio do Pica-Pau Amarelo - Versão infantil vibrante */
+  --sitio-yellow: #FFD700;        /* Dourado do milho e do sol - mais brilhante */
+  --sitio-green: #32CD32;         /* Verde da mata e das árvores - mais vivo */
+  --sitio-brown: #8B4513;         /* Marrom da terra e do tronco */
+  --sitio-red: #FF4500;           /* Vermelho das frutas e flores - mais laranja */
+  --sitio-blue: #00BFFF;          /* Azul do céu e do ribeirão - mais ciano */
+  --sitio-cream: #FFFACD;         /* Creme da casa e do leite - mais amarelo */
+  --sitio-orange: #FFA500;        /* Laranja do pôr do sol - mais vibrante */
+  
+  /* Light theme - cores naturais e acolhedoras, mais coloridas */
+  --bg: linear-gradient(135deg, #FFFACD 0%, #F0FFF0 50%, #FFFACD 100%);
+  --bg-solid: #FFFACD;
+  --fg: #2F4F2F;
+  --fg-muted: #5D6D5D;
+  --surface: rgba(255, 250, 205, 0.9);
+  --surface-elevated: rgba(255, 255, 255, 0.95);
+  --border: rgba(139, 69, 19, 0.15);
+  --accent: #FFD700;
+  --accent-hover: #FFC107;
+  --secondary: #32CD32;
+  --danger: #FF4500;
+  --shadow: 0 10px 30px rgba(139, 69, 19, 0.1);
+  --shadow-elevated: 0 20px 50px rgba(139, 69, 19, 0.2);
+  --glass: blur(16px) saturate(180%);
 }
 
 [data-theme="dark"] {
-  --bg: #0b0d10;
-  --fg: #f2f5f7;
-  --surface: rgba(15,17,22,0.6);
-  --border: rgba(255,255,255,0.12);
-  --shadow: 0 20px 50px rgba(0,0,0,0.6);
+  /* Dark theme - noite no sítio com fireflies */
+  --bg: linear-gradient(135deg, #0B1426 0%, #1a2332 50%, #0B1426 100%);
+  --bg-solid: #0B1426;
+  --fg: #E8F4F8;
+  --fg-muted: #B0BEC5;
+  --surface: rgba(26, 35, 50, 0.85);
+  --surface-elevated: rgba(15, 23, 35, 0.9);
+  --border: rgba(255, 215, 0, 0.2);
+  --accent: var(--sitio-yellow);
+  --accent-hover: #FFB300;
+  --secondary: #4CAF50;
+  --danger: #FF5252;
+  --shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+  --shadow-elevated: 0 30px 80px rgba(0, 0, 0, 0.8);
 }
 
 html {
   background: var(--bg);
   color: var(--fg);
-  transition: background-color 300ms ease, color 300ms ease;
+  transition: all 400ms cubic-bezier(0.4, 0.0, 0.2, 1);
 }
 
-/* Glass helpers */
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif;
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  font-variation-settings: 'opsz' 32;
+}
+
+/* Enhanced glass effects */
 .glass {
   background: var(--surface);
   backdrop-filter: var(--glass);
   -webkit-backdrop-filter: var(--glass);
   box-shadow: var(--shadow);
   border: 1px solid var(--border);
+  position: relative;
+}
+
+.glass::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(135deg, 
+    rgba(255, 255, 255, 0.1) 0%, 
+    transparent 50%, 
+    rgba(255, 255, 255, 0.05) 100%);
+  pointer-events: none;
+}
+
+.glass-elevated {
+  background: var(--surface-elevated);
+  box-shadow: var(--shadow-elevated);
+  transform: translateY(-2px);
 }
 
 /* Scroll snap utilities */
 .snap-y {
   scroll-snap-type: y mandatory;
+  scroll-behavior: smooth;
 }
 .snap-x {
-  scroll-snap-type: x proximity;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
 }
 .snap-start { scroll-snap-align: start; }
 .snap-center { scroll-snap-align: center; }
-.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar { 
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
 .no-scrollbar::-webkit-scrollbar { display: none; }
 
-/* Parallax helper */
+/* Enhanced parallax with performance */
 .parallax {
   will-change: transform;
   transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
 }
 
 /* Utilitários para contraste alto */
@@ -154,7 +215,7 @@ html {
 /* Melhorar legibilidade de botões */
 button {
   font-weight: 600 !important;
-  text-shadow: 1px 1px 2px rgba(0,0,0,0.8) !important;
+  text-shadow: 0 1px 1px rgba(0,0,0,0.45) !important;
 }
 
 /* Melhorar contraste de textos com fundos coloridos */
@@ -170,4 +231,52 @@ button {
 /* Garantir que ícones tenham bom contraste */
 .icon-contrast {
   filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.8)) !important;
+}
+
+/* Efeitos de vinheta e granulação para uma estética de jogo infantil */
+body::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  
+  /* Vinheta para focar o centro da tela */
+  box-shadow: inset 0 0 15vw 2vw rgba(0,0,0,0.2);
+  
+  /* Granulação sutil para textura */
+  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300"><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(%23noise)"/></svg>');
+  background-size: cover;
+  opacity: 0.03;
+  
+  z-index: 100; /* Acima de todo o conteúdo */
+  mix-blend-mode: multiply; /* Mescla melhor com as cores de fundo */
+}
+
+[data-theme="dark"] body::after {
+  mix-blend-mode: overlay; /* Fica melhor no tema escuro */
+  opacity: 0.05;
+  box-shadow: inset 0 0 15vw 2vw rgba(0,0,0,0.5);
+}
+
+/* Elementos decorativos infantis */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  background-image: 
+    radial-gradient(circle at 10% 10%, rgba(255, 215, 0, 0.1) 0%, transparent 20%),
+    radial-gradient(circle at 90% 20%, rgba(50, 205, 50, 0.1) 0%, transparent 20%),
+    radial-gradient(circle at 20% 80%, rgba(255, 69, 0, 0.1) 0%, transparent 20%),
+    radial-gradient(circle at 80% 90%, rgba(0, 191, 255, 0.1) 0%, transparent 20%);
+  background-size: 200px 200px;
+  background-repeat: repeat;
+  opacity: 0.3;
+  z-index: 99;
 }
