@@ -55,5 +55,15 @@
       <div class="loading">🏡 Carregando o Sítio...</div>
     </div>
     <script type="module" src="/src/main.jsx"></script>
+    <script>
+      // Unregister any existing service workers to ensure cache is cleared
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(registrations) {
+          for(let registration of registrations) {
+            registration.unregister();
+          }
+        });
+      }
+    </script>
   </body>
 </html>
