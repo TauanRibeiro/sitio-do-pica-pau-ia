@@ -215,7 +215,7 @@
   font-size: 0.9rem; 
   backface-visibility: hidden; 
   transform-style: preserve-3d; 
-  transition: all 0.6s ease; 
+  transition: transform 0.6s ease, filter 0.3s ease, box-shadow 0.3s ease; 
   text-shadow: 0 2px 6px rgba(0,0,0,0.35);
   box-sizing: border-box;
   border: 2px solid;
@@ -334,6 +334,13 @@
   0%, 100% { transform: translateX(0); }
   25% { transform: translateX(-8px) rotateZ(-2deg); }
   75% { transform: translateX(8px) rotateZ(2deg); }
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .card .front, .card .back { transition: none; }
+  .card, .card:hover, .card:active { transform: none !important; }
+  .card.matched, .card.miss { animation: none !important; }
 }
 
 /* === CELEBRAÇÃO DE VITÓRIA === */

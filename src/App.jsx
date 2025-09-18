@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, Suspense, lazy } from 'react'
 import './App.css'
 import './utils/achievements'
+import { getInitialTheme, applyTheme, toggleTheme } from './utils/theme'
 
 const MemoryGame = lazy(() => import('./components/MemoryGame'))
 
@@ -11,6 +12,8 @@ function App() {
   const [musicPlaying, setMusicPlaying] = useState(false)
   const [videoStream, setVideoStream] = useState(null)
   const [view, setView] = useState('home')
+  const [theme, setTheme] = useState(getInitialTheme())
+  const [pendingDifficulty, setPendingDifficulty] = useState(() => localStorage.getItem('memoryDifficulty') || 'easy')
   const [videoDevices, setVideoDevices] = useState([])
   const [selectedDeviceId, setSelectedDeviceId] = useState(null)
   const [useAI, setUseAI] = useState(true)
@@ -66,6 +69,13 @@ function App() {
     }
     return () => { if (videoStream) videoStream.getTracks().forEach(track => track.stop()) }
   }, [cameraActive, selectedDeviceId, flipCamera, videoStream])
+
+  // apply theme and listen system
+  useEffect(() => {
+    applyTheme(theme)
+    const off = () => {}
+    return off
+  }, [theme])
 
   // flip
   useEffect(() => {
@@ -873,6 +883,13 @@ function App() {
               >
                 📷 Câmera
               </button>
+              <button 
+                className="px-3 py-2 rounded-xl font-bold text-sm bg-white/10 hover:bg-white/20 transition-colors"
+                aria-label="Alternar tema claro/escuro"
+                onClick={() => setTheme(toggleTheme())}
+              >
+                {theme === 'dark' ? '🌙' : '☀️'}
+              </button>
               {view !== 'game' && (
                 <button 
                   className={`px-4 py-2.5 rounded-xl font-bold text-sm transition-all transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary,#FFD700)]/50 ${
@@ -891,32 +908,91 @@ function App() {
       </header>
   )}
 
-    {/* Home hero (only on home) */}
-  {view === 'home' && (
-  <section className="relative">
-        <div className="mx-auto max-w-5xl px-4 py-12 sm:py-16">
-          <div className="flex flex-col items-center text-center gap-6">
-            <div className="text-5xl sm:text-6xl font-black tracking-tight text-[var(--theme-text,#111)]">Sítio do Pica-Pau IA</div>
-            <p className="max-w-2xl text-[var(--theme-text,#333)]/80 text-lg leading-relaxed">Um jogo de memória minimalista com trilha procedural brasileira. Feito para rodar liso no seu celular.</p>
-            <div className="flex flex-wrap items-center justify-center gap-3">
-              <button className="px-6 py-3 rounded-2xl bg-black text-white font-bold hover:brightness-110 transition-colors" onClick={() => setView('game')}>🎮 Jogar agora</button>
-              <button className="px-6 py-3 rounded-2xl bg-white text-black border border-black/10 font-semibold hover:bg-black/5 transition-colors" onClick={() => setView('vision')}>📷 Câmera</button>
-              <button className={`px-6 py-3 rounded-2xl ${musicPlaying ? 'bg-red-500 text-white' : 'bg-white text-black border border-black/10'} font-semibold hover:brightness-110 transition-colors`}
-                onClick={async () => {
-                  try { await musicEngineRef.current?.ensureStart?.() } catch {}
-                  setMusicPlaying(v => !v)
-                }}>
-                {musicPlaying ? '🔇 Parar música' : '🎵 Música' }
-              </button>
-            </div>
-            <div className="flex items-center gap-2 text-sm text-[var(--theme-text,#333)]/70">
-              <span className={`inline-flex h-2 w-2 rounded-full ${musicEngineRef.current?.isPlaying ? 'bg-green-500' : 'bg-gray-400'}`}></span>
-              {musicEngineRef.current?.isPlaying ? 'Trilha ativa' : 'Trilha inativa'}
+    {/* Home immersive landing with scroll snapping and carousel */}
+    {view === 'home' && (
+      <main className="snap-y" aria-label="Início">
+        {/* HERO */}
+        <section className="snap-start" aria-labelledby="hero-title">
+          <div className="mx-auto max-w-6xl px-4 py-14 sm:py-20">
+            <div className="glass rounded-3xl p-8 sm:p-12 text-center">
+              <h2 id="hero-title" className="text-4xl sm:text-6xl font-black tracking-tight">Sítio do Pica-Pau IA</h2>
+              <p className="mt-4 text-lg opacity-80 max-w-2xl mx-auto">Jogo de memória com trilha procedural brasileira, acessível e mobile‑first.</p>
+              <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+                <button className="px-6 py-3 rounded-2xl bg-black text-white font-bold hover:brightness-110 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-400" onClick={() => setView('game')}>🎮 Jogar agora</button>
+                <button className="px-6 py-3 rounded-2xl bg-white/10 text-current border border-[var(--border)] font-semibold hover:bg-white/20 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-400" onClick={() => setView('vision')}>📷 Câmera</button>
+                <button className={`px-6 py-3 rounded-2xl ${musicPlaying ? 'bg-red-500 text-white' : 'bg-white/10 border border-[var(--border)]'} font-semibold hover:brightness-110 transition-colors`}
+                  onClick={async () => { try { await musicEngineRef.current?.ensureStart?.() } catch {}; setMusicPlaying(v => !v) }}>
+                  {musicPlaying ? '🔇 Parar música' : '🎵 Música' }
+                </button>
+                <button aria-label="Alternar tema" className="px-4 py-3 rounded-2xl bg-white/10 border border-[var(--border)]" onClick={() => setTheme(toggleTheme())}>{theme === 'dark' ? '🌙' : '☀️'}</button>
+              </div>
+              <div className="mt-3 flex items-center gap-2 justify-center text-sm opacity-70">
+                <span aria-hidden className={`inline-flex h-2 w-2 rounded-full ${musicEngineRef.current?.isPlaying ? 'bg-green-500' : 'bg-gray-400'}`}></span>
+                <span role="status">{musicEngineRef.current?.isPlaying ? 'Trilha ativa' : 'Trilha inativa'}</span>
+              </div>
             </div>
           </div>
-        </div>
-  </section>
-      )}
+        </section>
+
+        {/* FEATURES CAROUSEL */}
+        <section className="snap-start" aria-label="Destaques do jogo">
+          <div className="mx-auto max-w-6xl px-0 sm:px-4 py-6">
+            <div className="overflow-x-auto no-scrollbar snap-x px-4">
+              <div className="min-w-[120%] sm:min-w-0 grid grid-flow-col auto-cols-[80%] sm:auto-cols-[360px] gap-4">
+                {[
+                  { title: 'Música dinâmica', desc: 'Trilha muda com seus acertos', icon: '🎵' },
+                  { title: 'IA opcional', desc: 'Câmera com reconhecimento', icon: '🤖' },
+                  { title: 'Acessível', desc: 'Teclado, TTS e alto contraste', icon: '♿' },
+                  { title: 'Mobile‑first', desc: 'Rápido e responsivo', icon: '📱' }
+                ].map((f, i) => (
+                  <article key={i} className="glass rounded-2xl p-5 h-full snap-center parallax" role="group" aria-roledescription="slide">
+                    <div className="text-3xl" aria-hidden>{f.icon}</div>
+                    <h3 className="mt-2 text-xl font-extrabold">{f.title}</h3>
+                    <p className="opacity-80">{f.desc}</p>
+                  </article>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* DIFFICULTY PICKER */}
+        <section className="snap-start" aria-label="Escolher dificuldade">
+          <div className="mx-auto max-w-6xl px-4 py-10">
+            <div className="glass rounded-3xl p-6">
+              <h3 className="text-2xl font-black">Dificuldade</h3>
+              <p className="opacity-80">Escolha antes de começar o jogo.</p>
+              <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3" role="radiogroup" aria-label="Dificuldade">
+                {[
+                  { key: 'easy', label: 'Fácil', hint: '3 pares, grade 3×2' },
+                  { key: 'medium', label: 'Médio', hint: '6 pares' },
+                  { key: 'hard', label: 'Difícil', hint: '12 pares' }
+                ].map(opt => (
+                  <label key={opt.key} className={`glass rounded-2xl p-4 cursor-pointer border-2 ${pendingDifficulty===opt.key?'border-emerald-400':'border-transparent'}`}>
+                    <input type="radio" className="sr-only" name="difficulty" value={opt.key}
+                      checked={pendingDifficulty===opt.key}
+                      onChange={() => { setPendingDifficulty(opt.key); localStorage.setItem('memoryDifficulty', opt.key) }}
+                      aria-checked={pendingDifficulty===opt.key}
+                    />
+                    <div className="flex items-start gap-3">
+                      <span className="text-2xl" aria-hidden>🃏</span>
+                      <div>
+                        <div className="font-extrabold">{opt.label}</div>
+                        <div className="opacity-75 text-sm">{opt.hint}</div>
+                      </div>
+                    </div>
+                  </label>
+                ))}
+              </div>
+              <div className="mt-5 flex gap-3 justify-end">
+                <button className="px-5 py-3 rounded-xl border border-[var(--border)] hover:bg-white/10" onClick={() => setView('vision')}>📷 Ver câmera</button>
+                <button className="px-5 py-3 rounded-xl bg-black text-white font-bold hover:brightness-110" onClick={() => setView('game')}>Começar ▶</button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+    )}
   {/* Vision controls */}
   {view === 'vision' && (
         <div className="mx-auto max-w-5xl px-4 py-4 bg-white/30 rounded-2xl backdrop-blur-md border border-[var(--theme-primary,#FFD700)]/30 mb-4">
