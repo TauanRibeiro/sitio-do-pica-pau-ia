@@ -193,10 +193,10 @@ function App() {
   // Procedural music engine
   useEffect(() => {
   const ENGINE = {
-      ctxStarted: false,
+    ctxStarted: false,
   Tone: null,
   Soundfont: null,
-      parts: {},
+    parts: {},
       tempo: 85, // andamento mais suave e rural
       key: 'G',
       scale: ['G','A','B','C','D','E','F#'], // sol maior, tom caipira
@@ -205,7 +205,9 @@ function App() {
       melodyPart: null,
       percussionPart: null,
       victoryPart: null,
-      sf: { viola: null, flauta: null, harmonica: null },
+    sf: { viola: null, flauta: null, harmonica: null },
+    isPlaying: false,
+    isReady: false,
       
       setup: async () => {
         if (!ENGINE.Tone) {
@@ -217,10 +219,8 @@ function App() {
             ENGINE.Soundfont = mod.default
           } catch { /* noop */ }
         }
-        if (!ENGINE.ctxStarted) {
-          try { await ENGINE.Tone.start() } catch { /* audio context start failed */ }
-          ENGINE.ctxStarted = true
-        }
+        // Do not auto-start context here; defer to a user gesture via ensureStart/start
+        try { ENGINE.ctxStarted = ENGINE.Tone.getContext().state === 'running' } catch { ENGINE.ctxStarted = false }
         
         // === EQUALIZAÇÃO PARA SONORIDADE RURAL BRASILEIRA ===
         // Filtro passa-baixas para suavizar e dar caráter orgânico
@@ -437,8 +437,20 @@ function App() {
         return degrees.map((d)=>ENGINE.note(((d-1)%7)+1, octave))
       },
       
+      ensureStart: async () => {
+        if (!ENGINE.Tone) ENGINE.Tone = await import('tone')
+        try {
+          if (ENGINE.Tone.getContext().state === 'suspended') {
+            await ENGINE.Tone.start()
+          }
+          ENGINE.ctxStarted = true
+          ENGINE.isReady = true
+        } catch { /* failed to unlock */ }
+      },
       start: async (which='exploration', context = {}) => {
         await ENGINE.setup()
+        // Ensure context started (ideally after a click)
+        try { if (ENGINE.Tone.getContext().state === 'suspended') { await ENGINE.Tone.start(); ENGINE.ctxStarted = true } } catch { /* noop */ }
         const s = ENGINE.pickState(which, context)
         if (ENGINE.loop) { ENGINE.loop.dispose(); ENGINE.loop = null }
         if (ENGINE.percussionPart) { ENGINE.percussionPart.dispose(); ENGINE.percussionPart = null }
@@ -606,8 +618,9 @@ function App() {
           bar++
   }, '1m') // compasso de 4/4
         
-        ENGINE.loop.start(0)
-  ENGINE.Tone.Transport.start()
+    ENGINE.loop.start(0)
+  try { if (ENGINE.Tone.getContext().state === 'running') ENGINE.Tone.Transport.start() } catch { /* noop */ }
+    ENGINE.isPlaying = true
       },
 
       // Melodia especial de vitória
@@ -749,6 +762,7 @@ function App() {
           ENGINE.Tone.Transport.swing = 0
           try { ENGINE.Tone.Transport.stop() } catch { /* noop */ }
         }
+        ENGINE.isPlaying = false
       }
     }
     musicEngineRef.current = ENGINE
@@ -879,34 +893,30 @@ function App() {
 
     {/* Home hero (only on home) */}
   {view === 'home' && (
-  <section className="relative isolate">
-        <div className="absolute inset-0 -z-10 bg-gradient-to-br from-[var(--theme-primary,#FFD700)]/20 via-[var(--theme-secondary,#8B4513)]/10 to-[var(--theme-accent,#FF4500)]/20" />
-        <div className="mx-auto max-w-6xl px-4 py-8 sm:py-12">
-          <div className="grid lg:grid-cols-2 gap-6 items-center">
-            <div>
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-[var(--theme-text,#2F4F2F)] leading-tight">Memória do Sítio com trilha dinâmica</h2>
-              <p className="mt-3 text-[var(--theme-text,#2F4F2F)]/85 text-base sm:text-lg">Descubra pares, ouça efeitos sonoros e ative a trilha procedural com motivos leves. Funciona no celular e no desktop.</p>
-              <div className="mt-5 flex flex-wrap gap-3">
-                <button className="px-5 py-3 rounded-2xl bg-gradient-to-r from-[var(--theme-primary,#FFD700)] to-[var(--theme-accent,#FF4500)] text-[var(--theme-text,#2F4F2F)] font-bold shadow-lg transform hover:scale-105 transition-all focus:outline-none focus-visible:ring-2 ring-[var(--theme-primary,#FFD700)]/50" onClick={() => setView('game')}>🎮 Jogar agora</button>
-                <button className="px-5 py-3 rounded-2xl bg-white/10 backdrop-blur-sm text-[var(--theme-text,#2F4F2F)] font-semibold hover:bg-white/20 border border-[var(--theme-primary,#FFD700)]/30 transition-all focus:outline-none focus-visible:ring-2 ring-[var(--theme-primary,#FFD700)]/50" onClick={() => setView('vision')}>📷 Modo câmera</button>
-              </div>
+  <section className="relative">
+        <div className="mx-auto max-w-5xl px-4 py-12 sm:py-16">
+          <div className="flex flex-col items-center text-center gap-6">
+            <div className="text-5xl sm:text-6xl font-black tracking-tight text-[var(--theme-text,#111)]">Sítio do Pica-Pau IA</div>
+            <p className="max-w-2xl text-[var(--theme-text,#333)]/80 text-lg leading-relaxed">Um jogo de memória minimalista com trilha procedural brasileira. Feito para rodar liso no seu celular.</p>
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              <button className="px-6 py-3 rounded-2xl bg-black text-white font-bold hover:brightness-110 transition-colors" onClick={() => setView('game')}>🎮 Jogar agora</button>
+              <button className="px-6 py-3 rounded-2xl bg-white text-black border border-black/10 font-semibold hover:bg-black/5 transition-colors" onClick={() => setView('vision')}>📷 Câmera</button>
+              <button className={`px-6 py-3 rounded-2xl ${musicPlaying ? 'bg-red-500 text-white' : 'bg-white text-black border border-black/10'} font-semibold hover:brightness-110 transition-colors`}
+                onClick={async () => {
+                  try { await musicEngineRef.current?.ensureStart?.() } catch {}
+                  setMusicPlaying(v => !v)
+                }}>
+                {musicPlaying ? '🔇 Parar música' : '🎵 Música' }
+              </button>
             </div>
-            <div className="relative">
-              <div className="rounded-3xl p-6 bg-gradient-to-br from-[var(--theme-primary,#FFD700)]/20 to-[var(--theme-secondary,#8B4513)]/20 backdrop-blur-md shadow-2xl ring-1 ring-[var(--theme-primary,#FFD700)]/30">
-                <div className="text-center text-6xl mb-4 animate-bounce">🎩</div>
-                <p className="text-sm text-[var(--theme-text,#2F4F2F)]/80 text-center font-semibold">Jogue, aprenda e divirta-se com os personagens do Sítio!</p>
-              </div>
-              <div className="absolute -top-4 -right-4 w-16 h-16 rounded-full bg-[var(--theme-accent,#FF4500)] shadow-lg grid place-items-center text-2xl animate-bounce">
-                ⭐
-              </div>
-              <div className="absolute -bottom-4 -left-4 w-12 h-12 rounded-full bg-[var(--theme-secondary,#8B4513)] shadow-lg grid place-items-center text-xl animate-pulse">
-                🎵
-              </div>
+            <div className="flex items-center gap-2 text-sm text-[var(--theme-text,#333)]/70">
+              <span className={`inline-flex h-2 w-2 rounded-full ${musicEngineRef.current?.isPlaying ? 'bg-green-500' : 'bg-gray-400'}`}></span>
+              {musicEngineRef.current?.isPlaying ? 'Trilha ativa' : 'Trilha inativa'}
             </div>
           </div>
         </div>
   </section>
-  )}
+      )}
   {/* Vision controls */}
   {view === 'vision' && (
         <div className="mx-auto max-w-5xl px-4 py-4 bg-white/30 rounded-2xl backdrop-blur-md border border-[var(--theme-primary,#FFD700)]/30 mb-4">
