@@ -300,6 +300,14 @@ function App() {
                 {flipCamera ? '🔄 Desespelhar' : '🔄 Espelhar'}
               </button>
             </div>
+            <div className="flex items-center gap-2">
+              <button className="glass rounded-full px-4 py-2 font-bold text-lg text-[var(--sitio-green)] hover:bg-[var(--sitio-green)]/10 transition-all" onClick={() => { setCameraActive(false); setView('home') }}>
+                🏡 Início
+              </button>
+              <button className="glass rounded-full px-4 py-2 font-bold text-lg text-[var(--sitio-yellow)] hover:bg-[var(--sitio-yellow)]/10 transition-all hidden sm:inline" onClick={() => { setCameraActive(false); setView('home') }}>
+                Sítio IA
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -356,32 +364,29 @@ function App() {
               transition={{ type: 'spring', stiffness: 220, damping: 22 }}
             >
               <h3 id="about-title" className="text-2xl font-black mb-2">Quem somos</h3>
-              <p className="text-[var(--fg-muted)] mb-4">Sítio do Pica-Pau IA é um jogo de memória com música procedural brasileira, visão computacional opcional e acessibilidade embutida.</p>
-              <div className="mb-2 font-bold">Tecnologias utilizadas</div>
+              <p className="text-[var(--fg-muted)] mb-4">Sítio do Pica-Pau IA é um jogo de memória inovador, colorido e divertido!</p>
+              <div className="mb-2 font-bold text-xl text-[var(--sitio-green)]">Tecnologias inovadoras</div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
-                <div className="glass rounded-xl p-3">
-                  <div className="font-extrabold">React + Vite</div>
-                  <div className="text-[var(--fg-muted)] text-sm">SPA rápida, responsiva e moderna</div>
+                <div className="glass rounded-xl p-3 flex items-center gap-2">
+                  <span className="text-2xl">🎵</span>
+                  <div>
+                    <div className="font-extrabold text-[var(--sitio-green)]">Música procedural com IA</div>
+                    <div className="text-[var(--fg-muted)] text-sm">Trilha sonora que evolui conforme o jogo</div>
+                  </div>
                 </div>
-                <div className="glass rounded-xl p-3">
-                  <div className="font-extrabold">Framer Motion</div>
-                  <div className="text-[var(--fg-muted)] text-sm">Animações suaves e interativas</div>
+                <div className="glass rounded-xl p-3 flex items-center gap-2">
+                  <span className="text-2xl">🤖</span>
+                  <div>
+                    <div className="font-extrabold text-[var(--sitio-blue)]">Visão computacional</div>
+                    <div className="text-[var(--fg-muted)] text-sm">Reconhecimento de cartas via câmera</div>
+                  </div>
                 </div>
-                <div className="glass rounded-xl p-3">
-                  <div className="font-extrabold">Web Audio / Tone.js</div>
-                  <div className="text-[var(--fg-muted)] text-sm">Música procedural e efeitos sonoros</div>
-                </div>
-                <div className="glass rounded-xl p-3">
-                  <div className="font-extrabold">MediaDevices API</div>
-                  <div className="text-[var(--fg-muted)] text-sm">Reconhecimento de cartas via câmera</div>
-                </div>
-                <div className="glass rounded-xl p-3">
-                  <div className="font-extrabold">TailwindCSS</div>
-                  <div className="text-[var(--fg-muted)] text-sm">Design moderno, responsivo e acessível</div>
-                </div>
-                <div className="glass rounded-xl p-3">
-                  <div className="font-extrabold">ARIA / Acessibilidade</div>
-                  <div className="text-[var(--fg-muted)] text-sm">Navegação por teclado, alto contraste, TTS</div>
+                <div className="glass rounded-xl p-3 flex items-center gap-2">
+                  <span className="text-2xl">♿</span>
+                  <div>
+                    <div className="font-extrabold text-[var(--sitio-yellow)]">Acessibilidade</div>
+                    <div className="text-[var(--fg-muted)] text-sm">Navegação por teclado, alto contraste, TTS</div>
+                  </div>
                 </div>
               </div>
               <div className="flex justify-end gap-2">
