@@ -167,18 +167,18 @@ class MobileAudioEngine {
 }
 
 const ALL_CHARACTERS = [
-  { name:'Emília', img: './characters/emilia.png' },
-  { name:'Narizinho', img: './characters/narizinho.png' },
-  { name:'Pedrinho', img: './characters/pedrinho.png' },
-  { name:'Visconde', img: './characters/visconde.png' },
-  { name:'Dona Benta', img: './characters/dona_benta.png' },
-  { name:'Tia Nastácia', img: './characters/tia_nastacia.png' },
-  { name:'Saci', img: './characters/saci.png' },
-  { name:'Cuca', img: './characters/cuca.png' },
-  { name:'Rabicó', img: './characters/rabico.png' },
-  { name:'Tio Barnabé', img: './characters/barnabe.png' },
-  { name:'Quindim', img: './characters/quindim.png' },
-  { name:'Conselheiro', img: './characters/conselheiro.png' }
+  { name:'Emília', img: 'characters/emilia.png' },
+  { name:'Narizinho', img: 'characters/narizinho.png' },
+  { name:'Pedrinho', img: 'characters/pedrinho.png' },
+  { name:'Visconde', img: 'characters/visconde.png' },
+  { name:'Dona Benta', img: 'characters/dona_benta.png' },
+  { name:'Tia Nastácia', img: 'characters/tia_nastacia.png' },
+  { name:'Saci', img: 'characters/saci.png' },
+  { name:'Cuca', img: 'characters/cuca.png' },
+  { name:'Rabicó', img: 'characters/rabico.png' },
+  { name:'Tio Barnabé', img: 'characters/barnabe.png' },
+  { name:'Quindim', img: 'characters/quindim.png' },
+  { name:'Conselheiro', img: 'characters/conselheiro.png' }
 ]
 
 function shuffle(array) {
@@ -192,6 +192,15 @@ function shuffle(array) {
 
 export default function MemoryGame({ musicPlaying }) {
   const { confirm } = useDialog()
+  const asset = useCallback((p) => {
+    try {
+      const base = (import.meta && import.meta.env && import.meta.env.BASE_URL) ? import.meta.env.BASE_URL : '/'
+      const norm = (p || '').replace(/^\.\//, '').replace(/^\//, '')
+      return `${base}${norm}`
+    } catch {
+      return p
+    }
+  }, [])
   const [cards, setCards] = useState([])
   const [flipped, setFlipped] = useState([])
   const [matched, setMatched] = useState([])
@@ -262,7 +271,8 @@ export default function MemoryGame({ musicPlaying }) {
   // initializeGame doesn't use `score` in its closure; keep deps minimal to avoid unnecessary re-renders
   const initializeGame = useCallback(() => {
     const selectedChars = shuffle(ALL_CHARACTERS).slice(0, pairCount)
-    const gameCards = shuffle([...selectedChars, ...selectedChars]).map((char, index) => ({
+    const resolved = selectedChars.map(c => ({ ...c, img: asset(c.img) }))
+    const gameCards = shuffle([...resolved, ...resolved]).map((char, index) => ({
       ...char,
       id: char.name + index,
       uniqueId: index
@@ -293,7 +303,7 @@ export default function MemoryGame({ musicPlaying }) {
         window.sitioMusicEngine.start('reset', { difficulty })
       } catch { /* noop */ }
     }
-  }, [pairCount, difficulty, musicPlaying, isPlaying, audioEngine, dynamicMusicEnabled])
+  }, [pairCount, difficulty, musicPlaying, isPlaying, audioEngine, dynamicMusicEnabled, asset])
 
   useEffect(() => {
     // ensure theme is applied on mount

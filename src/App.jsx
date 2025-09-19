@@ -948,6 +948,16 @@ function App() {
         <h1 className="text-lg sm:text-xl font-black text-with-bg hidden sm:block">Sítio IA</h1>
       </div>
       <div className="flex items-center gap-2">
+        {/* Botão de câmera rápido, sempre visível no header */}
+        <button
+          onClick={() => { setView('vision'); setCameraActive(true) }}
+          className="px-3 py-2 sm:px-4 sm:py-2 rounded-xl glass hover:glass-elevated text-[var(--fg)] font-semibold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-yellow-400 text-xs sm:text-sm"
+          aria-label="Abrir câmera"
+          title="Abrir câmera"
+        >
+          <span className="hidden sm:inline">Câmera</span>
+          <span className="sm:hidden text-lg">📷</span>
+        </button>
         <button 
           onClick={() => setShowAboutModal(true)}
           className="px-3 py-2 sm:px-4 sm:py-2 rounded-xl glass hover:glass-elevated text-[var(--fg)] font-semibold transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-yellow-400 text-xs sm:text-sm"
@@ -1238,7 +1248,7 @@ function App() {
                 <button onClick={captureTemplate} className="small-btn">Capturar Template</button>
                 <button onClick={takeSnapshot} className="small-btn">Tirar Foto</button>
                 <button onClick={() => { templatesRef.current = []; setSnapshots([]); alert({ title: 'Limpo!', message: 'Templates e fotos foram apagados.', icon: '🧹' }) }} className="small-btn">Limpar Tudo</button>
-                <a href="./printable-cards.html" target="_blank" rel="noopener" className="small-btn">📄 Cartas imprimíveis</a>
+                <a href={`${import.meta.env.BASE_URL || '/'}printable-cards.html`} target="_blank" rel="noopener" className="small-btn">📄 Cartas imprimíveis</a>
               </div>
               <p style={{ fontWeight: 700, textShadow: '0 2px 6px rgba(0,0,0,.35)' }}>
                 Cartas detectadas: {detectedCards.length > 0 ? detectedCards.join(', ') : 'Nenhuma'} | AI: {aiReady ? 'Pronto ✅' : 'Carregando ⏳'}
