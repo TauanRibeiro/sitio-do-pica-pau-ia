@@ -1,0 +1,310 @@
+/* Advanced Layout System with CSS Grid and Custom Properties */
+:root {
+  /* Design system spacing units based on 8px grid */
+  --spacing-unit: 0.5rem;
+  --spacing-1: calc(var(--spacing-unit) * 1);  /* 8px */
+  --spacing-2: calc(var(--spacing-unit) * 2);  /* 16px */
+  --spacing-3: calc(var(--spacing-unit) * 3);  /* 24px */
+  --spacing-4: calc(var(--spacing-unit) * 4);  /* 32px */
+  --spacing-6: calc(var(--spacing-unit) * 6);  /* 48px */
+  --spacing-8: calc(var(--spacing-unit) * 8);  /* 64px */
+  
+  /* Button system variables */
+  --btn-primary-padding-x: var(--spacing-6);
+  --btn-primary-padding-y: var(--spacing-3);
+  --btn-secondary-padding-x: var(--spacing-4);
+  --btn-secondary-padding-y: var(--spacing-2);
+  --btn-tertiary-padding-x: var(--spacing-3);
+  --btn-tertiary-padding-y: var(--spacing-1);
+  
+  /* Border radius system */
+  --radius-sm: 0.5rem;
+  --radius-md: 1rem;
+  --radius-lg: 1.5rem;
+  --radius-xl: 2rem;
+  --radius-full: 9999px;
+
+  /* Z-index layers system */
+  --z-base: 1;
+  --z-content: 10;
+  --z-navigation: 100;
+  --z-overlay: 1000;
+  --z-modal: 2000;
+
+  /* Transitions */
+  --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-medium: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-bounce: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Advanced CSS Grid Layout for Perfect Symmetry */
+.home-container {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  gap: var(--spacing-4) !important;
+  max-width: 1200px !important;
+  width: 100% !important;
+  padding: var(--spacing-4) !important;
+}
+
+.glass-elevated {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  gap: var(--spacing-4) !important;
+}
+
+/* Button Grid System for Symmetrical Layout */
+.button-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)) !important;
+  gap: var(--spacing-3) !important;
+  width: 100% !important;
+  max-width: 800px !important;
+  margin: 0 auto !important;
+}
+
+/* Feature buttons container with flex fallback for grid */
+.feature-buttons {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  justify-content: center !important;
+  gap: var(--spacing-2) !important;
+  margin-top: var(--spacing-6) !important;
+}
+
+@supports (display: grid) {
+  .feature-buttons {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)) !important;
+    gap: var(--spacing-2) !important;
+  }
+}
+
+/* Consistent Button System */
+.btn-primary {
+  padding: var(--btn-primary-padding-y) var(--btn-primary-padding-x) !important;
+  border-radius: var(--radius-xl) !important;
+  font-size: 1.25rem !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.03em !important;
+  text-transform: uppercase !important;
+  background: linear-gradient(135deg, var(--sitio-green), #32CD32, var(--sitio-green)) !important;
+  color: white !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2),
+              0 0 15px rgba(50, 205, 50, 0.5),
+              inset 0 2px 5px rgba(255, 255, 255, 0.3) !important;
+  transition: transform var(--transition-bounce), box-shadow var(--transition-medium) !important;
+  position: relative !important;
+  overflow: hidden !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 64px !important;
+}
+
+.btn-primary::before {
+  content: "" !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent) !important;
+  transform: translateX(-100%) !important;
+  transition: transform 0.8s ease !important;
+}
+
+.btn-primary:hover::before {
+  transform: translateX(100%) !important;
+}
+
+.btn-primary:hover {
+  transform: translateY(-5px) scale(1.05) !important;
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3),
+              0 0 20px rgba(50, 205, 50, 0.7),
+              inset 0 2px 5px rgba(255, 255, 255, 0.5) !important;
+}
+
+.btn-primary:active {
+  transform: translateY(2px) scale(0.98) !important;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2),
+              0 0 10px rgba(50, 205, 50, 0.3),
+              inset 0 2px 5px rgba(255, 255, 255, 0.3) !important;
+}
+
+.btn-secondary {
+  padding: var(--btn-secondary-padding-y) var(--btn-secondary-padding-x) !important;
+  border-radius: var(--radius-full) !important;
+  font-size: 0.95rem !important;
+  font-weight: 700 !important;
+  border: 2px solid rgba(255, 255, 255, 0.3) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: var(--spacing-1) !important;
+  min-height: 48px !important;
+}
+
+.btn-secondary i, 
+.btn-secondary span[role="img"],
+.btn-secondary .icon {
+  font-size: 1.2em !important;
+  margin-right: var(--spacing-1) !important;
+}
+
+/* Consistent Focus States for Accessibility */
+.btn-primary:focus-visible,
+.btn-secondary:focus-visible,
+button:focus-visible {
+  outline: none !important;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.7),
+              0 0 0 6px rgba(50, 205, 50, 0.5) !important;
+  position: relative !important;
+  z-index: var(--z-content) !important;
+}
+
+/* Advanced CSS Button Animation for Main Button */
+@keyframes pulse-light {
+  0%, 100% { 
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7),
+                0 10px 25px rgba(0, 0, 0, 0.2);
+  }
+  50% { 
+    box-shadow: 0 0 0 15px rgba(255, 255, 255, 0),
+                0 15px 30px rgba(0, 0, 0, 0.3);
+  }
+}
+
+.btn-primary.animate-attention {
+  animation: pulse-light 2s infinite !important;
+}
+
+/* Badge system for button indicators */
+.badge {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0.25rem 0.5rem !important;
+  font-size: 0.75rem !important;
+  font-weight: 700 !important;
+  border-radius: var(--radius-full) !important;
+  background: rgba(255, 255, 255, 0.2) !important;
+  color: white !important;
+  position: absolute !important;
+  top: -8px !important;
+  right: -8px !important;
+  min-width: 24px !important;
+  min-height: 24px !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Symmetrical central content layout */
+.central-content {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  text-align: center !important;
+  max-width: 800px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  gap: var(--spacing-4) !important;
+}
+
+/* Advanced header styles with consistent spacing */
+.header-content {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  margin-bottom: var(--spacing-6) !important;
+}
+
+.header-content h2 {
+  margin-top: var(--spacing-3) !important;
+  margin-bottom: var(--spacing-2) !important;
+}
+
+.header-content p {
+  margin-top: var(--spacing-2) !important;
+  margin-bottom: var(--spacing-4) !important;
+}
+
+/* Advanced Container Shadows and Depth */
+.glass-elevated {
+  box-shadow: 
+    0 10px 30px rgba(0, 0, 0, 0.2),
+    0 30px 60px rgba(0, 0, 0, 0.1),
+    inset 0 2px 10px rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Fix for the main action button - make it always stand out */
+.btn-main-action {
+  z-index: var(--z-content) !important;
+  position: relative !important;
+  animation: pulse-light 3s infinite !important;
+  transform-origin: center !important;
+}
+
+/* Make sure all buttons in header are aligned */
+.fixed.top-0 button {
+  width: 48px !important;
+  height: 48px !important;
+  border-radius: 50% !important;
+  display: grid !important;
+  place-items: center !important;
+}
+
+/* Ensure buttons work properly with flexbox */
+button, .button, .tab-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* Apply proper hover states with transform */
+button:hover, .button:hover, .tab-btn:hover {
+  transform: translateY(-3px) !important;
+  transition: transform var(--transition-bounce) !important;
+}
+
+/* Set proper button sizes for navigation elements */
+.tab-btn {
+  height: 48px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 var(--spacing-3) !important;
+}
+
+/* Ensure all feature buttons are consistent */
+.feature-buttons button {
+  width: 100% !important;
+  height: 100% !important;
+  padding: var(--btn-tertiary-padding-y) var(--btn-tertiary-padding-x) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: var(--spacing-1) !important;
+  white-space: nowrap !important;
+}
+
+/* Better empty state handling */
+button:empty::before,
+.button:empty::before {
+  content: "Botão" !important;
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+/* Fix for the button in difficulty modal */
+.difficulty-btn {
+  width: 100% !important;
+  text-align: left !important;
+  display: flex !important;
+  align-items: center !important;
+  border-radius: var(--radius-lg) !important;
+  transition: transform var(--transition-medium) !important;
+}
+
+.difficulty-btn:hover {
+  transform: translateY(-2px) !important;
+}

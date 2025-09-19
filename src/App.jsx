@@ -10,22 +10,20 @@ const MemoryGame = lazy(() => import('./components/MemoryGame'))
 
 // Theme Toggle component
 function ThemeToggle({ theme, setTheme }) {
-  const nextTheme = theme === 'light' ? 'dark' : 'light';
+  const nextTheme = theme === 'light' ? 'dark' : 'light'
+  const isDay = theme === 'light'
   return (
     <button
       type="button"
       onClick={() => setTheme(toggleTheme())}
-      className="relative grid place-items-center w-12 h-12 rounded-full glass hover:glass-elevated transition-all focus:outline-none focus-visible:ring-2 ring-[var(--accent)]/50"
+      className={`circle-btn btn-theme ${isDay ? 'day' : 'night'}`}
       aria-label={`Mudar para tema ${nextTheme}`}
+      aria-pressed={!isDay}
+      title={isDay ? 'Tema claro (sol)' : 'Tema escuro (lua)'}
     >
-      <span className={`absolute transition-transform duration-500 ${theme === 'dark' ? 'rotate-0 scale-100' : '-rotate-90 scale-0'}`}>
-        🌙
-      </span>
-      <span className={`absolute transition-transform duration-500 ${theme === 'light' ? 'rotate-0 scale-100' : 'rotate-90 scale-0'}`}>
-        ☀️
-      </span>
+      <span className="text-xl" aria-hidden>{isDay ? '☀️' : '🌙'}</span>
     </button>
-  );
+  )
 }
 
 // Circular Music Toggle component
@@ -38,9 +36,7 @@ function MusicToggle({ isOn, onToggle, disabled = false, labelOn = 'Pausar músi
         aria-label={isOn ? labelOn : labelOff}
         disabled={disabled}
         onClick={onToggle}
-        className={`relative grid place-items-center w-12 h-12 rounded-full transition-all focus:outline-none focus-visible:ring-2 ring-[var(--accent)]/50 shadow-md ${
-          isOn ? 'bg-[var(--secondary)] text-white' : 'glass text-[var(--fg)] hover:glass-elevated'
-        } ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105'}`}
+  className={`circle-btn btn-music ${isOn ? 'on' : 'off'} ${disabled ? 'is-disabled' : ''}`}
       >
         <span className="text-lg">{isOn ? '🔊' : '🎵'}</span>
         {isOn && (
@@ -68,6 +64,8 @@ function App() {
   const [musicPlaying, setMusicPlaying] = useState(true)
   const [musicVolume, setMusicVolume] = useState(1)
   const [speechVolume, setSpeechVolume] = useState(1)
+  const [sfxVolume, setSfxVolume] = useState(0.8)
+  const [ttsEnabled, setTtsEnabled] = useState(true)
   
   // AI and Camera state
   const [cameraActive, setCameraActive] = useState(false)
@@ -77,6 +75,9 @@ function App() {
   const [flipCamera, setFlipCamera] = useState(false)
   const [detectedCards, setDetectedCards] = useState([])
   const [snapshots, setSnapshots] = useState([])
+
+  // Lightweight popover for feature info on home
+  const [featureInfo, setFeatureInfo] = useState(null) // {icon, title, text}
 
   // Refs
   const videoRef = useRef(null)
@@ -162,6 +163,22 @@ function App() {
     }
   }, [])
 
+  // Sync app audio settings with engine
+  useEffect(() => {
+    const eng = window.sitioMusicEngine
+    if (!eng) return
+    try {
+      eng.musicEnabled = !!musicPlaying
+      if (eng.masterVolume && eng.masterVolume.volume) {
+        // Map linear [0..1] to decibels [-30..0]
+        const db = Math.max(-60, Math.min(0, (musicVolume * 30) - 30))
+        eng.masterVolume.volume.value = db
+      }
+    } catch (e) {
+      console.warn('Failed to sync audio engine volume/state', e)
+    }
+  }, [musicPlaying, musicVolume])
+
   // Handle scroll for progress bar
   useEffect(() => {
     const handleScroll = () => {
@@ -198,9 +215,9 @@ function App() {
           initial={{ y: -100 }}
           animate={{ y: 0 }}
           transition={{ type: 'spring', stiffness: 70, damping: 20, delay: 0.2 }}
-          className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between p-3 sm:p-4 glass"
+          className="site-header glass"
         >
-          <div className="flex items-center gap-2">
+          <div className="brand">
             <motion.div 
               whileHover={{ rotate: -5, scale: 1.1 }}
               className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-gradient-to-br from-[var(--sitio-yellow)] to-[var(--sitio-orange)] grid place-items-center text-2xl shadow-lg cursor-pointer"
@@ -209,12 +226,12 @@ function App() {
             >
               🏡
             </motion.div>
-            <h1 className="text-lg sm:text-xl font-black text-with-bg hidden sm:block">Sítio IA</h1>
+            <h1 className="text-lg sm:text-xl font-black text-with-bg show-desktop">Sítio IA</h1>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="header-actions">
             <button
               onClick={() => { setView('vision'); setCameraActive(true) }}
-              className="grid place-items-center w-12 h-12 rounded-full glass hover:glass-elevated text-[var(--fg)] transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-yellow-400 shadow-md hover:scale-105"
+              className="circle-btn btn-camera"
               aria-label="Abrir câmera"
             >
               <span className="text-lg">📷</span>
@@ -223,22 +240,24 @@ function App() {
             <ThemeToggle theme={theme} setTheme={setTheme} />
             <button 
               onClick={() => setShowAudioModal(true)}
-              className="grid place-items-center w-12 h-12 rounded-full glass hover:glass-elevated text-[var(--fg)] transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-yellow-400 shadow-md hover:scale-105"
+              className="circle-btn btn-settings"
               aria-label="Configurações"
             >
               <span className="text-lg">⚙️</span>
             </button>
             <button 
               onClick={() => setShowAboutModal(true)}
-              className="tab-btn text-xs sm:text-sm"
+              className="tab-btn about-btn"
               aria-label="Sobre o projeto"
             >
-              <span className="hidden sm:inline">Quem Somos</span>
-              <span className="sm:hidden text-lg">ℹ️</span>
+              <span className="show-desktop">Quem Somos</span>
+              <span className="show-mobile text-lg">ℹ️</span>
             </button>
           </div>
         </motion.header>
       )}
+      {/* Spacer to offset fixed header height */}
+      {view !== 'game' && <div className="header-spacer" aria-hidden></div>}
 
       {/* Main Content */}
       <AnimatePresence mode="wait">
@@ -280,19 +299,21 @@ function App() {
                       <span className="text-lg opacity-80">Jogo de memória com música e IA • Acessível • Mobile-first</span>
                     </p>
                     <div className="mt-8 flex flex-col items-center gap-4">
-                      <motion.button 
-                        className="group relative px-12 py-6 rounded-3xl bg-gradient-to-r from-[var(--sitio-green)] via-[#32CD32] to-[var(--sitio-green)] text-white font-black text-2xl hover:shadow-2xl hover:scale-110 transition-all duration-300 focus:outline-none focus-visible:ring-4 focus-visible:ring-green-400 animate-pulse shadow-lg" 
-                        onClick={() => setShowDifficultyModal(true)}
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.98 }}
-                      >
-                        <span className="flex items-center gap-3">
-                          🎮 <span>JOGAR AGORA</span>
-                          <span className="group-hover:translate-x-2 transition-transform text-3xl">🚀</span>
-                        </span>
-                      </motion.button>
-                      <div className="mt-8 flex flex-wrap justify-center gap-3">
-                        {[
+                      <div className="flex flex-wrap justify-center items-center gap-4 w-full max-w-4xl">
+                        <motion.button 
+                          className="group relative px-12 py-6 rounded-3xl bg-gradient-to-r from-[var(--sitio-green)] via-[#32CD32] to-[var(--sitio-green)] text-white font-black text-2xl hover:shadow-2xl hover:scale-110 transition-all duration-300 focus:outline-none focus-visible:ring-4 focus-visible:ring-green-400 animate-pulse shadow-lg btn-primary btn-main-action" 
+                          onClick={() => setShowDifficultyModal(true)}
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.98 }}
+                          aria-label="Jogar agora - Inicia o jogo da memória"
+                        >
+                          <span className="flex items-center gap-3">
+                            🎮 <span>JOGAR AGORA</span>
+                            <span className="group-hover:translate-x-2 transition-transform text-3xl">🚀</span>
+                          </span>
+                        </motion.button>
+                        
+                        {[ 
                           {
                             label: 'IA Visão Computacional',
                             grad: 'from-[var(--sitio-blue)] to-[var(--sitio-green)]',
@@ -300,7 +321,8 @@ function App() {
                             info: {
                               title: 'IA Visão Computacional',
                               text: 'Utiliza inteligência artificial para reconhecer cartas do jogo usando a câmera do dispositivo. Permite interação física e digital, tornando a experiência mais imersiva e divertida.'
-                            }
+                            },
+                            action: () => { setView('vision'); setCameraActive(true); }
                           },
                           {
                             label: 'IA Trilha Procedural',
@@ -309,7 +331,8 @@ function App() {
                             info: {
                               title: 'IA Trilha Procedural',
                               text: 'A trilha sonora é gerada por algoritmos de IA, mudando conforme o progresso do jogo. Isso cria uma experiência musical única e personalizada para cada partida.'
-                            }
+                            },
+                            action: () => { setShowAudioModal(true); }
                           },
                           {
                             label: 'Acessível',
@@ -318,21 +341,26 @@ function App() {
                             info: {
                               title: 'Acessibilidade',
                               text: 'Inclui navegação por teclado, alto contraste e leitura de tela (TTS), garantindo que pessoas com diferentes necessidades possam jogar sem barreiras.'
-                            }
+                            },
+                            action: () => setFeatureInfo({ icon: '♿', title: 'Acessibilidade', text: 'Inclui navegação por teclado, alto contraste e leitura de tela (TTS), garantindo que pessoas com diferentes necessidades possam jogar sem barreiras.' })
                           }
                         ].map((b, i) => (
                           <motion.button
                             key={i}
                             type="button"
-                            className={`px-4 py-2 rounded-full text-sm font-bold border border-white/30 bg-gradient-to-r ${b.grad} text-white shadow-lg focus:outline-none focus-visible:ring-2 ring-[var(--accent)]/50`}
+                            className={`btn-secondary px-4 py-3 rounded-full text-sm font-bold border border-white/30 bg-gradient-to-r ${b.grad} text-white shadow-lg focus:outline-none focus-visible:ring-2 ring-[var(--accent)]/50 min-w-[180px]`}
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: i * 0.1 }}
                             whileHover={{ scale: 1.07 }}
                             whileTap={{ scale: 0.98 }}
-                            onClick={() => alert({ title: b.info.title, message: b.info.text, icon: b.icon })}
+                            onClick={() => {
+                              setFeatureInfo({ icon: b.icon, title: b.info.title, text: b.info.text });
+                              if (b.action) b.action();
+                            }}
+                            aria-label={b.label}
                           >
-                            {b.icon} {b.label}
+                            <span className="icon">{b.icon}</span> {b.label}
                           </motion.button>
                         ))}
                       </div>
@@ -354,7 +382,11 @@ function App() {
           >
             <Suspense fallback={<div className="stage-center text-xl">Carregando Jogo...</div>}>
               <MemoryGame 
-                difficulty={pendingDifficulty} 
+                difficulty={pendingDifficulty}
+                musicPlaying={musicPlaying}
+                speechVolume={speechVolume}
+                sfxVolume={sfxVolume}
+                ttsEnabled={ttsEnabled}
                 onFinish={() => {
                   alert({ title: 'Parabéns!', message: 'Você completou o jogo!', icon: '🎉' });
                   setView('home');
@@ -389,11 +421,28 @@ function App() {
         )}
       </AnimatePresence>
 
+      {/* Floating popover for feature info (home) */}
+      {featureInfo && view === 'home' && (
+        <div style={{ position:'fixed', inset:0, zIndex: 2300, display:'grid', placeItems:'center', padding:'1rem' }}>
+          <div style={{ position:'absolute', inset:0, background:'rgba(0,0,0,.35)', backdropFilter:'blur(1.5px)' }} onClick={() => setFeatureInfo(null)} />
+          <div className="glass-elevated" style={{ position:'relative', maxWidth:560, width:'min(92vw,560px)', borderRadius:'1.25rem', padding:'1.1rem 1.25rem' }}>
+            <div style={{ display:'flex', alignItems:'center', gap:'.6rem', marginBottom:'.35rem' }}>
+              <span style={{ fontSize:'1.6rem' }}>{featureInfo.icon}</span>
+              <h4 className="text-with-bg" style={{ margin:0, fontWeight:900 }}>{featureInfo.title}</h4>
+            </div>
+            <p style={{ margin:0, opacity:.95 }}>{featureInfo.text}</p>
+            <div style={{ display:'flex', justifyContent:'flex-end', marginTop:'.8rem' }}>
+              <button className="small-btn" onClick={() => setFeatureInfo(null)}>Entendi</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Modals */}
       <AnimatePresence>
         {showDifficultyModal && (
-          <motion.div className="fixed inset-0 z-[80] grid place-items-center p-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <div className="absolute inset-0 bg-black/40" onClick={() => setShowDifficultyModal(false)} />
+          <motion.div style={{ position:'fixed', inset:0, zIndex: 2400, display:'flex', alignItems:'center', justifyContent:'center', padding:'1rem' }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <div style={{ position:'absolute', inset:0, background:'rgba(0,0,0,0.45)', backdropFilter:'blur(2px)' }} onClick={() => setShowDifficultyModal(false)} />
             <motion.div className="relative glass-elevated rounded-3xl max-w-md w-full p-6" initial={{ y: 30, opacity: 0, scale: 0.98 }} animate={{ y: 0, opacity: 1, scale: 1 }} exit={{ y: 30, opacity: 0, scale: 0.98 }} transition={{ type: 'spring', stiffness: 220, damping: 22 }}>
               <h3 className="text-xl font-black mb-4">Escolha a Dificuldade</h3>
               <div className="grid grid-cols-1 gap-3 mb-6">
@@ -427,8 +476,8 @@ function App() {
         )}
 
         {showAudioModal && (
-          <motion.div className="fixed inset-0 z-[80] grid place-items-center p-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <div className="absolute inset-0 bg-black/40" onClick={() => setShowAudioModal(false)} />
+          <motion.div style={{ position:'fixed', inset:0, zIndex: 2400, display:'flex', alignItems:'center', justifyContent:'center', padding:'1rem' }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <div style={{ position:'absolute', inset:0, background:'rgba(0,0,0,0.45)', backdropFilter:'blur(2px)' }} onClick={() => setShowAudioModal(false)} />
             <motion.div className="relative glass-elevated rounded-3xl max-w-md w-full p-6" initial={{ y: 30, opacity: 0, scale: 0.98 }} animate={{ y: 0, opacity: 1, scale: 1 }} exit={{ y: 30, opacity: 0, scale: 0.98 }} transition={{ type: 'spring', stiffness: 220, damping: 22 }}>
               <h3 className="text-xl font-black mb-2">Configurações de Áudio</h3>
               <div className="mb-4">
@@ -439,6 +488,16 @@ function App() {
                 <label className="block font-bold mb-1">Volume da fala (leitura de tela)</label>
                 <input type="range" min={0} max={1} step={0.01} value={speechVolume} onChange={e => setSpeechVolume(Number(e.target.value))} className="w-full" />
               </div>
+              <div className="mb-4">
+                <label className="block font-bold mb-1">Volume dos toques (SFX)</label>
+                <input type="range" min={0} max={1} step={0.01} value={sfxVolume} onChange={e => setSfxVolume(Number(e.target.value))} className="w-full" />
+              </div>
+              <div className="mb-4">
+                <label className="inline-flex items-center gap-2 font-bold">
+                  <input type="checkbox" checked={ttsEnabled} onChange={e => setTtsEnabled(e.target.checked)} />
+                  Ativar leitura de tela (TTS)
+                </label>
+              </div>
               <div className="flex justify-end gap-2">
                 <button className="px-4 py-2 rounded-xl bg-gradient-to-r from-[var(--sitio-green)] to-[var(--sitio-blue)] text-white font-bold" onClick={() => setShowAudioModal(false)}>Fechar</button>
               </div>
@@ -446,32 +505,32 @@ function App() {
           </motion.div>
         )}
 
-        {showAboutModal && (
-           <motion.div className="fixed inset-0 z-[80] grid place-items-center p-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <div className="absolute inset-0 bg-black/40" onClick={() => setShowAboutModal(false)} />
-            <motion.div className="relative glass-elevated rounded-3xl max-w-lg w-full p-6 text-center" initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 30, opacity: 0 }}>
+      {showAboutModal && (
+        <motion.div style={{ position:'fixed', inset:0, zIndex: 2400, display:'flex', alignItems:'center', justifyContent:'center', padding:'1rem' }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+        <div style={{ position:'absolute', inset:0, background:'rgba(0,0,0,0.45)', backdropFilter:'blur(2px)' }} onClick={() => setShowAboutModal(false)} />
+        <motion.div className="relative glass-elevated rounded-3xl max-w-lg w-full p-6 text-center" initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 30, opacity: 0 }}>
                 <h3 className="text-2xl font-black mb-4">Sobre o Projeto</h3>
                 <p className="mb-4">Este é um projeto de demonstração para a Feira de Ciências, combinando o universo de Monteiro Lobato com tecnologias de Inteligência Artificial.</p>
                 <p className="font-bold">Desenvolvido por: Malie, Tauan, Carla e Vovó Jane.</p>
                 <button className="mt-6 px-4 py-2 rounded-xl bg-gradient-to-r from-[var(--sitio-green)] to-[var(--sitio-blue)] text-white font-bold" onClick={() => setShowAboutModal(false)}>Fechar</button>
             </motion.div>
-           </motion.div>
+        </motion.div>
         )}
       </AnimatePresence>
 
       {/* Footer */}
       {view !== 'game' && (
-        <footer className="relative mt-6 border-t border-[var(--theme-primary,#FFD700)]/30">
-          <div className="mx-auto max-w-6xl px-4 py-6 text-[var(--theme-text,#2F4F2F)] text-sm flex flex-wrap items-center justify-between gap-3">
-            <div className="flex items-center gap-2 font-extrabold text-[var(--theme-text,#2F4F2F)] text-with-bg">
-              <span className="h-2.5 w-2.5 rounded-full bg-[var(--theme-primary,#FFD700)] shadow-sm" />
-              👩‍🎨 Malie • ⚡ Tauan • 🧙‍♀️ Carla • 👵 Vovó Jane
+        <footer className="site-footer">
+          <div className="footer-row">
+            <div className="footer-left text-with-bg">
+              <span className="dot" />
+              <span className="names">👩‍🎨 Malie • ⚡ Tauan • 🧙‍♀️ Carla • 👵 Vovó Jane</span>
             </div>
-            <div className="flex items-center gap-3">
-              <a className="glass px-3 py-1.5 rounded-lg" href="https://github.com/TauanRibeiro/sitio-do-pica-pau-ia" target="_blank" rel="noreferrer">🌐 Repositório</a>
+            <div className="footer-right">
+              <a className="footer-link glass" href="https://github.com/TauanRibeiro/sitio-do-pica-pau-ia" target="_blank" rel="noreferrer">🌐 Repositório</a>
             </div>
           </div>
-          <div className="mx-auto max-w-6xl px-4 pb-6 text-center font-extrabold text-with-bg">
+          <div className="footer-note text-with-bg">
             🏫 Projeto para Feira de Ciências - Colégio Meta, Sobradinho-DF
           </div>
         </footer>

@@ -190,7 +190,7 @@ function shuffle(array) {
   return arr
 }
 
-export default function MemoryGame({ musicPlaying, difficulty, onFinish, onExit }) {
+export default function MemoryGame({ musicPlaying, speechVolume = 1, sfxVolume: sfxVolumeProp = 0.8, ttsEnabled: ttsEnabledProp = false, difficulty, onFinish, onExit }) {
   const { confirm } = useDialog()
   const asset = useCallback((p) => {
     try {
@@ -216,10 +216,10 @@ export default function MemoryGame({ musicPlaying, difficulty, onFinish, onExit 
   const [controlsLocked, setControlsLocked] = useState(false)
   const [showOnboarding, setShowOnboarding] = useState(false)
   const [paused, setPaused] = useState(false)
-  const [ttsEnabled, setTtsEnabled] = useState(false)
+  const [ttsEnabled, setTtsEnabled] = useState(!!ttsEnabledProp)
   const [audioInitialized, setAudioInitialized] = useState(false)
   const [musicEnabled, setMusicEnabled] = useState(true)
-  const [sfxVolume, setSfxVolume] = useState(0.8)
+  const [sfxVolume, setSfxVolume] = useState(sfxVolumeProp)
   const [hapticEnabled, setHapticEnabled] = useState(true)
   const [victoryMessageIndex, setVictoryMessageIndex] = useState(0)
   const [playingVictoryJingle, setPlayingVictoryJingle] = useState(false)
@@ -260,6 +260,8 @@ export default function MemoryGame({ musicPlaying, difficulty, onFinish, onExit 
   }, [audioEngine, musicEnabled, sfxVolume])
 
   useEffect(() => { setIsPlaying(!!musicPlaying) }, [musicPlaying])
+  useEffect(() => { setSfxVolume(sfxVolumeProp) }, [sfxVolumeProp])
+  useEffect(() => { setTtsEnabled(!!ttsEnabledProp) }, [ttsEnabledProp])
 
   const pairCount = useMemo(() => {
     switch(difficulty) {
@@ -349,11 +351,12 @@ export default function MemoryGame({ musicPlaying, difficulty, onFinish, onExit 
       if (!('speechSynthesis' in window)) return
       const utter = new SpeechSynthesisUtterance(text)
       utter.lang = 'pt-BR'
-      utter.rate = 1
+    utter.rate = 1
+    utter.volume = Math.max(0, Math.min(1, speechVolume))
       window.speechSynthesis.cancel()
       window.speechSynthesis.speak(utter)
   } catch { /* noop */ }
-  }, [ttsEnabled])
+  }, [ttsEnabled, speechVolume])
 
   const handleCardClick = useCallback((cardIndex) => {
   if (paused || flipped.length >= 2 || flipped.includes(cardIndex) || matched.includes(cardIndex) || finished) {

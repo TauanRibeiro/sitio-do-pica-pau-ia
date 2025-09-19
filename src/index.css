@@ -348,3 +348,108 @@ body::before {
 .bg-orbs .o2 { width: 320px; height: 320px; background: var(--sitio-green); bottom: -90px; right: -60px; animation-delay: -5s; }
 .bg-orbs .o3 { width: 260px; height: 260px; background: var(--sitio-blue); top: 40%; left: 70%; animation-delay: -10s; }
 @keyframes float { 0%{ transform: translateY(0) translateX(0) scale(1);} 50%{ transform: translateY(-22px) translateX(10px) scale(1.04);} 100%{ transform: translateY(0) translateX(0) scale(1);} }
+
+/* ---- Header alignment & glassmorphism ---- */
+.site-header {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: .75rem 1rem;
+  background: var(--surface);
+  backdrop-filter: var(--glass);
+  -webkit-backdrop-filter: var(--glass);
+  border-bottom: 1px solid var(--border);
+  box-shadow: var(--shadow);
+}
+.site-header .brand { display: flex; align-items: center; gap: .5rem; }
+.site-header .header-actions { display: flex; align-items: center; gap: .5rem; }
+
+/* Spacer used below fixed header to avoid overlap */
+.header-spacer { height: 64px; }
+
+/* Compact on very small screens */
+@media (max-width: 420px) {
+  .site-header { padding: .5rem .6rem; }
+  .site-header .header-actions { gap: .4rem; }
+  .header-spacer { height: 56px; }
+}
+
+/* Circle action buttons, colorful with sitio palette */
+.circle-btn {
+  position: relative;
+  display: grid; place-items: center;
+  width: 48px; height: 48px;
+  border-radius: 999px;
+  color: var(--fg);
+  background: linear-gradient(135deg, rgba(255,255,255,.85), rgba(255,255,255,.65));
+  border: 1px solid var(--border);
+  box-shadow: 0 10px 26px rgba(0,0,0,.25), 0 0 0 2px rgba(255,255,255,.2) inset;
+  transition: transform .2s ease, box-shadow .2s ease, filter .2s ease;
+}
+.circle-btn:hover { transform: translateY(-2px); filter: brightness(1.03); box-shadow: 0 16px 36px rgba(0,0,0,.28); }
+.circle-btn:focus-visible { box-shadow: var(--ring); outline: none; }
+.circle-btn.is-disabled { opacity: .6; cursor: not-allowed; }
+
+/* Per-button color accents using Sítio palette */
+.btn-camera { background: linear-gradient(135deg, rgba(0,191,255,.9), rgba(0,191,255,.65)); color: #073b4c; }
+.btn-music.off { background: linear-gradient(135deg, rgba(255,215,0,.9), rgba(255,165,0,.7)); color: #5b3200; }
+.btn-music.on { background: linear-gradient(135deg, rgba(50,205,50,.95), rgba(50,205,50,.7)); color: #082b08; }
+.btn-settings { background: linear-gradient(135deg, rgba(255,69,0,.9), rgba(255,165,0,.7)); color: #3a0b00; }
+.btn-theme { background: linear-gradient(135deg, rgba(255,255,255,.9), rgba(255,255,255,.65)); color: var(--fg); }
+.btn-theme.day { background: linear-gradient(135deg, rgba(255,215,0,.95), rgba(255,255,255,.7)); color: #5b3200; }
+.btn-theme.night { background: linear-gradient(135deg, rgba(0,0,0,.6), rgba(26,35,50,.85)); color: #FFD700; text-shadow: 0 1px 2px rgba(0,0,0,.8); }
+.about-btn { font-weight: 800; }
+
+/* Footer alignment */
+.site-footer {
+  position: relative;
+  margin-top: 1rem;
+  padding-top: .25rem;
+  border-top: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+}
+.site-footer .footer-row {
+  max-width: 1200px; margin: 0 auto;
+  padding: 1rem 1rem;
+  display: flex; flex-wrap: wrap;
+  align-items: center; justify-content: space-between;
+  gap: .75rem;
+}
+.site-footer .footer-left { display: inline-flex; align-items: center; gap: .5rem; font-weight: 900; color: var(--fg); }
+.site-footer .dot { width: 10px; height: 10px; border-radius: 999px; background: var(--accent); box-shadow: 0 2px 6px rgba(0,0,0,.25); display: inline-block; }
+.site-footer .footer-right { display: inline-flex; align-items: center; gap: .5rem; }
+.site-footer .footer-link { padding: .35rem .7rem; border-radius: .75rem; }
+.site-footer .footer-note { max-width: 1200px; margin: 0 auto; padding: 0 1rem 1rem; text-align: center; font-weight: 900; color: var(--fg); }
+
+/* Responsive helpers for label swapping */
+.show-desktop { display: none; }
+.show-mobile { display: inline; }
+@media (min-width: 640px) {
+  .show-desktop { display: inline; }
+  .show-mobile { display: none; }
+}
+
+/* Main buttons layout - side by side with responsive wrapping */
+.main-buttons-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  max-width: 1200px;
+}
+
+@media (max-width: 640px) {
+  .main-buttons-container {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .main-buttons-container .btn-secondary {
+    min-width: 200px;
+    text-align: center;
+  }
+}
