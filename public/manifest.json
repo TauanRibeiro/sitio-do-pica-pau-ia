@@ -6,7 +6,7 @@
   "display": "fullscreen",
   "background_color": "#1a1a1a",
   "theme_color": "#FFD700",
-  "orientation": "portrait",
+  "orientation": "any",
   "scope": "/sitio-do-pica-pau-ia/",
   "lang": "pt-BR",
   "categories": ["games", "education", "entertainment"],

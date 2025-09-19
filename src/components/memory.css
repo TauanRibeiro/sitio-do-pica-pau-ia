@@ -184,8 +184,9 @@
 /* === CARTAS === */
 .card { 
   position: relative; 
+  /* Make cards subtly portrait: height ~1.2x width */
   width: var(--card-size);
-  height: var(--card-size);
+  height: calc(var(--card-size) * 1.2);
   border-radius: 20px; 
   cursor: pointer; 
   perspective: 1000px; 
@@ -248,17 +249,21 @@
 }
 
 .card .front img { 
-  width: calc(var(--card-size) * 0.7); 
-  height: calc(var(--card-size) * 0.7); 
+  /* Show full character PNG inside portrait card */
+  width: calc(var(--card-size) * 0.8); 
+  height: calc(var(--card-size) * 0.95); 
+  max-height: calc(100% - 2.1rem); /* leave room for name */
   border-radius: 16px; 
   box-shadow: 0 6px 20px rgba(0,0,0,0.3); 
-  margin-bottom: 0.5rem; 
-  object-fit: cover; 
+  margin-bottom: 0.4rem; 
+  object-fit: contain; 
+  object-position: center bottom; 
+  background: rgba(255,255,255,0.35); 
   border: 2px solid rgba(255,255,255,0.6);
 }
 
 .card .front .name { 
-  font-size: 0.8rem; 
+  font-size: 0.82rem; 
   font-weight: 800; 
   letter-spacing: 0.5px; 
   text-align: center; 
@@ -266,7 +271,7 @@
   overflow: hidden; 
   text-overflow: ellipsis; 
   white-space: nowrap; 
-  padding: 0 4px;
+  padding: 0 6px;
   line-height: 1.2;
   color: var(--theme-text, #2F4F2F);
   text-shadow: 1px 1px 3px rgba(255,255,255,0.8);

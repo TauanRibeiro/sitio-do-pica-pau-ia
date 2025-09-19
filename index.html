@@ -35,7 +35,8 @@
                     radial-gradient(1000px 700px at 80% 30%, rgba(255,165,0,0.20), transparent 60%),
                     linear-gradient(135deg, #FFF8DC 0%, #F0FFF0 50%, #FFFACD 100%);
         color: var(--sitio-brown);
-        overflow: hidden;
+        overflow-x: hidden; /* prevent sideways scroll */
+        overflow-y: auto;   /* allow wheel/touch scrolling */
         -webkit-tap-highlight-color: transparent;
         -webkit-touch-callout: none;
         -webkit-user-select: none;
