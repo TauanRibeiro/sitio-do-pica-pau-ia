@@ -1,6 +1,5 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* If using Tailwind, ensure your build tool processes these directives. 
+   If not using Tailwind, remove these lines to avoid errors. */
 
 /* CSS Reset com melhor acessibilidade */
 * {
