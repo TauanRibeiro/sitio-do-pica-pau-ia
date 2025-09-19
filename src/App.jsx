@@ -460,21 +460,20 @@ function App() {
               </div>
               <div className="flex justify-end gap-3">
                 <button className="px-4 py-3 rounded-xl glass text-sm font-bold" onClick={() => setShowDifficultyModal(false)}>Cancelar</button>
-                <button 
-                  className="px-4 py-3 rounded-xl bg-gradient-to-r from-[var(--sitio-green)] to-[var(--sitio-blue)] text-white font-bold text-sm" 
+                <button
+                  className="px-6 py-3 rounded-xl bg-gradient-to-r from-[var(--sitio-green)] to-[var(--sitio-blue)] text-white font-bold text-sm"
                   onClick={() => {
-                    localStorage.setItem('memoryDifficulty', pendingDifficulty);
-                    setShowDifficultyModal(false);
-                    setView('game');
+                    try { localStorage.setItem('memoryDifficulty', pendingDifficulty) } catch {}
+                    setShowDifficultyModal(false)
+                    setView('game')
                   }}
                 >
-                  Iniciar Jogo
+                  Começar
                 </button>
               </div>
             </motion.div>
           </motion.div>
         )}
-
         {showAudioModal && (
           <motion.div style={{ position:'fixed', inset:0, zIndex: 2400, display:'flex', alignItems:'center', justifyContent:'center', padding:'1rem' }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             <div style={{ position:'absolute', inset:0, background:'rgba(0,0,0,0.45)', backdropFilter:'blur(2px)' }} onClick={() => setShowAudioModal(false)} />
@@ -505,16 +504,21 @@ function App() {
           </motion.div>
         )}
 
-      {showAboutModal && (
-        <motion.div style={{ position:'fixed', inset:0, zIndex: 2400, display:'flex', alignItems:'center', justifyContent:'center', padding:'1rem' }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-        <div style={{ position:'absolute', inset:0, background:'rgba(0,0,0,0.45)', backdropFilter:'blur(2px)' }} onClick={() => setShowAboutModal(false)} />
-        <motion.div className="relative glass-elevated rounded-3xl max-w-lg w-full p-8 mx-4 text-center" initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 30, opacity: 0 }}>
-                <h3 className="text-2xl font-black mb-6">Sobre o Projeto</h3>
-                <p className="mb-6 text-sm leading-relaxed">Este é um projeto de demonstração para a Feira de Ciências, combinando o universo de Monteiro Lobato com tecnologias de Inteligência Artificial.</p>
-                <p className="font-bold mb-8 text-sm">Desenvolvido por: Malie, Tauan, Carla e Vovó Jane.</p>
-                <button className="px-6 py-3 rounded-xl bg-gradient-to-r from-[var(--sitio-green)] to-[var(--sitio-blue)] text-white font-bold text-sm" onClick={() => setShowAboutModal(false)}>Fechar</button>
+        {showAboutModal && (
+          <motion.div style={{ position:'fixed', inset:0, zIndex: 2400, display:'flex', alignItems:'center', justifyContent:'center', padding:'1rem' }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <div style={{ position:'absolute', inset:0, background:'rgba(0,0,0,0.45)', backdropFilter:'blur(2px)' }} onClick={() => setShowAboutModal(false)} />
+            <motion.div 
+              className="relative glass-elevated rounded-3xl max-w-lg w-full p-8 mx-4 text-center border-2 border-[var(--sitio-yellow)]/40 max-h-[85vh] overflow-auto"
+              initial={{ y: 30, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 30, opacity: 0 }}
+            >
+              <h3 className="text-2xl font-black mb-6">Sobre o Projeto</h3>
+              <p className="mb-6 text-sm leading-relaxed">Este é um projeto de demonstração para a Feira de Ciências, combinando o universo de Monteiro Lobato com tecnologias de Inteligência Artificial.</p>
+              <p className="font-bold mb-8 text-sm">Desenvolvido por: Malie, Tauan, Carla e Vovó Jane.</p>
+              <button className="px-6 py-3 rounded-xl bg-gradient-to-r from-[var(--sitio-green)] to-[var(--sitio-blue)] text-white font-bold text-sm" onClick={() => setShowAboutModal(false)}>Fechar</button>
             </motion.div>
-        </motion.div>
+          </motion.div>
         )}
       </AnimatePresence>
 
