@@ -197,6 +197,32 @@ body {
   outline: none; box-shadow: var(--ring);
 }
 
+/* Subtle ambient noise texture overlay */
+.ambient-noise {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: .06;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140' viewBox='0 0 140 140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.65' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='.15'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.6'/%3E%3C/svg%3E");
+}
+
+/* Header tab uniform style */
+.tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  padding: .5rem .8rem;
+  border-radius: 12px;
+  color: var(--fg);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  transition: transform .2s ease, box-shadow .2s ease, filter .2s ease;
+}
+.tab-btn:hover { transform: translateY(-1px); filter: brightness(1.03); box-shadow: 0 16px 36px rgba(0,0,0,.18); }
+.tab-btn:focus-visible { box-shadow: var(--ring); }
+
 /* Scroll snap utilities */
 .snap-y {
   scroll-snap-type: y mandatory;
