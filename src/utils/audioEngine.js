@@ -369,6 +369,52 @@ class GameAudioEngine {
     }
   }
 
+  playVictoryJingle() {
+    if (!this.musicEnabled || !this.isInitialized) return;
+    
+    try {
+      console.log('🎵 Playing victory jingle');
+      
+      // Para qualquer música anterior
+      if (this.victoryJingleInterval) {
+        clearInterval(this.victoryJingleInterval);
+      }
+      
+      const playJingle = () => {
+        const now = Tone.now();
+        if (this.synth) {
+          // Jingle de conquistador: fanfarra curta e repetitiva
+          this.synth.triggerAttackRelease('C5', '16n', now);
+          this.synth.triggerAttackRelease('E5', '16n', now + 0.1);
+          this.synth.triggerAttackRelease('G5', '16n', now + 0.2);
+          this.synth.triggerAttackRelease('C6', '8n', now + 0.3);
+          
+          // Segundo compasso
+          this.synth.triggerAttackRelease('G5', '16n', now + 0.6);
+          this.synth.triggerAttackRelease('E5', '16n', now + 0.7);
+          this.synth.triggerAttackRelease('C5', '8n', now + 0.8);
+        }
+      };
+      
+      // Toca imediatamente
+      playJingle();
+      
+      // Repete a cada 2 segundos até ser parado
+      this.victoryJingleInterval = setInterval(playJingle, 2000);
+      
+    } catch (error) {
+      console.warn('Failed to play victory jingle:', error);
+    }
+  }
+
+  stopVictoryJingle() {
+    if (this.victoryJingleInterval) {
+      clearInterval(this.victoryJingleInterval);
+      this.victoryJingleInterval = null;
+      console.log('🎵 Stopped victory jingle');
+    }
+  }
+
   // Utility methods
   setMusicEnabled(enabled) {
     this.musicEnabled = enabled;

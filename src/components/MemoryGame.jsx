@@ -221,6 +221,8 @@ export default function MemoryGame({ musicPlaying, difficulty, onFinish, onExit 
   const [musicEnabled, setMusicEnabled] = useState(true)
   const [sfxVolume, setSfxVolume] = useState(0.8)
   const [hapticEnabled, setHapticEnabled] = useState(true)
+  const [victoryMessageIndex, setVictoryMessageIndex] = useState(0)
+  const [playingVictoryJingle, setPlayingVictoryJingle] = useState(false)
   const [dynamicMusicEnabled, setDynamicMusicEnabled] = useState(true)
   const [gameStarted, setGameStarted] = useState(false)
   const [elapsedMs, setElapsedMs] = useState(0)
@@ -292,6 +294,13 @@ export default function MemoryGame({ musicPlaying, difficulty, onFinish, onExit 
     setGameStarted(false)
     setElapsedMs(0)
     setFinalScore(null)
+    setPlayingVictoryJingle(false)
+    
+    // Para o jingle de vitória se estiver tocando
+    if (window.sitioMusicEngine) {
+      window.sitioMusicEngine.stopVictoryJingle()
+    }
+    
     if (timerRef.current) {
       clearInterval(timerRef.current)
       timerRef.current = null
@@ -409,7 +418,19 @@ export default function MemoryGame({ musicPlaying, difficulty, onFinish, onExit 
             setShowCelebration(true)
             audioEngine?.onGameComplete(musicEnabled, sfxVolume, hapticEnabled)
             setControlsLocked(false)
-            speak('Você venceu!')
+            
+            // Alterna entre "você ganhou!" e "você venceu"
+            const victoryMessages = ['Você ganhou!', 'Você venceu!']
+            const currentMessage = victoryMessages[victoryMessageIndex]
+            speak(currentMessage)
+            setVictoryMessageIndex((prev) => (prev + 1) % victoryMessages.length)
+            
+            // Inicia jingle de vitória
+            setPlayingVictoryJingle(true)
+            if (window.sitioMusicEngine) {
+              window.sitioMusicEngine.playVictoryJingle()
+            }
+            
             // Para timer e calcula score final baseado em tempo/movimentos/dificuldade
             if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null }
             const elapsedSeconds = Math.max(1, Math.round(elapsedMs / 1000))

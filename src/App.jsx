@@ -230,12 +230,18 @@ function App() {
             <MusicToggle isOn={musicPlaying} onToggle={() => setMusicPlaying(v => !v)} onAdvanced={() => setShowAudioModal(true)} />
             <ThemeToggle theme={theme} setTheme={setTheme} />
             <button 
-              onClick={() => setShowAboutModal(true)}
-              className="tab-btn text-xs sm:text-sm"
-              aria-label="Sobre o projeto"
+              onClick={() => setShowAudioModal(true)}
+              className="grid place-items-center w-12 h-12 rounded-full glass hover:glass-elevated text-[var(--fg)] transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-yellow-400 shadow-md hover:scale-105"
+              aria-label="Configurações"
             >
-              <span className="hidden sm:inline">Quem Somos</span>
-              <span className="sm:hidden text-lg">ℹ️</span>
+              <span className="text-lg">⚙️</span>
+            </button>
+            <button 
+              onClick={() => setShowAboutModal(true)}
+              className="grid place-items-center w-12 h-12 rounded-full glass hover:glass-elevated text-[var(--fg)] transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-yellow-400 shadow-md hover:scale-105"
+              aria-label="Quem somos"
+            >
+              <span className="text-lg">ℹ️</span>
             </button>
           </div>
         </motion.header>
