@@ -255,11 +255,11 @@ function App() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="snap-y relative z-10" 
+            className="home-main snap-y relative z-10" 
             aria-label="Início"
           >
-            <section className="snap-start min-h-[95vh] flex items-center justify-center relative" aria-labelledby="hero-title">
-              <div className="container py-8 w-full">
+            <section className="home-section snap-start flex items-center justify-center relative" aria-labelledby="hero-title">
+              <div className="home-container py-8 w-full">
                 <div className="glass-elevated rounded-3xl p-8 sm:p-12 relative overflow-hidden text-center">
                   <div className="absolute inset-0 bg-gradient-to-br from-[var(--sitio-yellow)]/10 via-[var(--sitio-green)]/5 to-[var(--sitio-blue)]/10 pointer-events-none"></div>
                   <div className="relative z-10">

@@ -110,3 +110,37 @@ body::-webkit-scrollbar-thumb {
   .subtitle { font-size: .95rem; padding: 0 .3rem; }
   .viz { height: 36px; gap: 4px; }
 }
+
+/* Home page layout fixes */
+.home-main {
+  padding-top: 0;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.home-section {
+  padding: 2rem 1rem;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.home-container {
+  max-width: 1200px;
+  width: 100%;
+  padding: 0 1rem;
+}
+
+@media (max-width: 768px) {
+  .home-section {
+    padding: 1rem 0.5rem;
+    min-height: auto;
+  }
+  
+  .home-container {
+    padding: 0 0.5rem;
+  }
+}
