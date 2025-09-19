@@ -52,8 +52,8 @@ function App() {
   const { alert } = useDialog()
   // core state
   const [cameraActive, setCameraActive] = useState(false)
-  const [microphoneActive, setMicrophoneActive] = useState(false)
-  const [musicPlaying, setMusicPlaying] = useState(false)
+  const [microphoneActive, setMicrophoneActive] = useState(true) // screen reader always enabled by default
+  const [musicPlaying, setMusicPlaying] = useState(true) // music always enabled by default
   const [videoStream, setVideoStream] = useState(null)
   const [view, setView] = useState('home')
   const [theme, setTheme] = useState(getInitialTheme())
@@ -119,7 +119,23 @@ function App() {
           videoRef.current.style.transform = flipCamera ? 'scaleX(-1)' : 'none'
         }
         const devices = await navigator.mediaDevices.enumerateDevices()
-        const vids = devices.filter(d => d.kind === 'videoinput')
+        // Only keep two cameras: user and environment
+        const vids = []
+        let userCam = null, envCam = null
+        for (const d of devices) {
+          if (d.kind === 'videoinput') {
+            if (d.label.toLowerCase().includes('front') || d.label.toLowerCase().includes('user')) userCam = d
+            else if (d.label.toLowerCase().includes('back') || d.label.toLowerCase().includes('rear') || d.label.toLowerCase().includes('environment')) envCam = d
+          }
+        }
+        if (userCam) vids.push(userCam)
+        if (envCam) vids.push(envCam)
+        // fallback: if no labels, just pick first two
+        if (vids.length < 2) {
+          const allVids = devices.filter(d => d.kind === 'videoinput')
+          if (allVids[0]) vids.push(allVids[0])
+          if (allVids[1]) vids.push(allVids[1])
+        }
         setVideoDevices(vids)
         if (!selectedDeviceId && vids.length > 0) setSelectedDeviceId(vids[0].deviceId)
       } catch (err) {
@@ -165,7 +181,9 @@ function App() {
           <div className="flex items-center gap-2">
             <motion.div 
               whileHover={{ rotate: -5, scale: 1.1 }}
-              className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-gradient-to-br from-[var(--sitio-yellow)] to-[var(--sitio-orange)] grid place-items-center text-2xl shadow-lg"
+              className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-gradient-to-br from-[var(--sitio-yellow)] to-[var(--sitio-orange)] grid place-items-center text-2xl shadow-lg cursor-pointer"
+              onClick={() => setView('home')}
+              title="Ir para página inicial"
             >
               🏡
             </motion.div>
@@ -179,6 +197,8 @@ function App() {
             >
               <span className="text-lg">📷</span>
             </button>
+            <MusicToggle isOn={musicPlaying} onToggle={() => setMusicPlaying(v => !v)} />
+            <ThemeToggle theme={theme} setTheme={setTheme} />
             <button 
               onClick={() => setShowAboutModal(true)}
               className="tab-btn text-xs sm:text-sm"
@@ -187,8 +207,6 @@ function App() {
               <span className="hidden sm:inline">Quem Somos</span>
               <span className="sm:hidden text-lg">ℹ️</span>
             </button>
-            <ThemeToggle theme={theme} setTheme={setTheme} />
-            <MusicToggle isOn={musicPlaying} onToggle={() => setMusicPlaying(v => !v)} />
           </div>
         </motion.header>
       )}
@@ -222,7 +240,7 @@ function App() {
                   <div className="mt-8 flex flex-col items-center gap-4">
                     <motion.button 
                       className="group relative px-12 py-6 rounded-3xl bg-gradient-to-r from-[var(--sitio-green)] via-[#32CD32] to-[var(--sitio-green)] text-white font-black text-2xl hover:shadow-2xl hover:scale-110 transition-all duration-300 focus:outline-none focus-visible:ring-4 focus-visible:ring-green-400 animate-pulse shadow-lg" 
-                      onClick={() => setView('game')}
+                      onClick={() => setShowDifficultyModal(true)}
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.98 }}
                     >
@@ -339,6 +357,33 @@ function App() {
             >
               <h3 id="about-title" className="text-2xl font-black mb-2">Quem somos</h3>
               <p className="text-[var(--fg-muted)] mb-4">Sítio do Pica-Pau IA é um jogo de memória com música procedural brasileira, visão computacional opcional e acessibilidade embutida.</p>
+              <div className="mb-2 font-bold">Tecnologias utilizadas</div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+                <div className="glass rounded-xl p-3">
+                  <div className="font-extrabold">React + Vite</div>
+                  <div className="text-[var(--fg-muted)] text-sm">SPA rápida, responsiva e moderna</div>
+                </div>
+                <div className="glass rounded-xl p-3">
+                  <div className="font-extrabold">Framer Motion</div>
+                  <div className="text-[var(--fg-muted)] text-sm">Animações suaves e interativas</div>
+                </div>
+                <div className="glass rounded-xl p-3">
+                  <div className="font-extrabold">Web Audio / Tone.js</div>
+                  <div className="text-[var(--fg-muted)] text-sm">Música procedural e efeitos sonoros</div>
+                </div>
+                <div className="glass rounded-xl p-3">
+                  <div className="font-extrabold">MediaDevices API</div>
+                  <div className="text-[var(--fg-muted)] text-sm">Reconhecimento de cartas via câmera</div>
+                </div>
+                <div className="glass rounded-xl p-3">
+                  <div className="font-extrabold">TailwindCSS</div>
+                  <div className="text-[var(--fg-muted)] text-sm">Design moderno, responsivo e acessível</div>
+                </div>
+                <div className="glass rounded-xl p-3">
+                  <div className="font-extrabold">ARIA / Acessibilidade</div>
+                  <div className="text-[var(--fg-muted)] text-sm">Navegação por teclado, alto contraste, TTS</div>
+                </div>
+              </div>
               <div className="flex justify-end gap-2">
                 <button className="px-4 py-2 rounded-xl bg-gradient-to-r from-[var(--sitio-green)] to-[var(--sitio-blue)] text-white font-bold" onClick={() => setShowAboutModal(false)}>
                   Fechar
