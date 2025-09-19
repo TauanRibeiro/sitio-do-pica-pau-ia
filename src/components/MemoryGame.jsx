@@ -2,6 +2,7 @@
 import './memory.css'
 import './themes.css'
 import Leaderboard from './Leaderboard'
+import { useDialog } from '../ui/DialogContext'
 
 class MobileAudioEngine {
   constructor() {
@@ -190,6 +191,7 @@ function shuffle(array) {
 }
 
 export default function MemoryGame({ musicPlaying }) {
+  const { confirm } = useDialog()
   const [cards, setCards] = useState([])
   const [flipped, setFlipped] = useState([])
   const [matched, setMatched] = useState([])
@@ -535,8 +537,9 @@ export default function MemoryGame({ musicPlaying }) {
       {/* Botão de sair (apenas opção além das cartas) */}
       <button
         className="exit-btn"
-        onClick={() => {
-          if (confirm('Deseja sair do jogo atual? Seu progresso será perdido.')) {
+        onClick={async () => {
+          const ok = await confirm({ title: 'Sair do jogo?', message: 'Deseja sair do jogo atual? Seu progresso será perdido.', icon: '🚪', okText: 'Sair', cancelText: 'Cancelar' })
+          if (ok) {
             if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null }
             window.dispatchEvent(new CustomEvent('sitio:navigate', { detail: 'vision' }))
           }
@@ -606,7 +609,17 @@ export default function MemoryGame({ musicPlaying }) {
           moves={moves} 
           difficulty={difficulty} 
           timeSeconds={Math.max(1, Math.round(elapsedMs/1000))}
-          onClose={() => setShowLeaderboard(false)} 
+          onClose={() => { 
+            setShowLeaderboard(false)
+            // Restart a fresh game with the same difficulty
+            initializeGame()
+            // Resume ambient exploration music after restart
+            try {
+              if (window.sitioMusicEngine && (musicPlaying || isPlaying) && dynamicMusicEnabled) {
+                window.sitioMusicEngine.start('exploration', { difficulty })
+              }
+            } catch {}
+          }} 
         />
       )}
       

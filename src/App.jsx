@@ -3,6 +3,7 @@ import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-mo
 import './App.css'
 import './utils/achievements'
 import { getInitialTheme, applyTheme, toggleTheme } from './utils/theme'
+import { useDialog } from './ui/DialogContext'
 
 const MemoryGame = lazy(() => import('./components/MemoryGame'))
 
@@ -48,6 +49,7 @@ function MusicToggle({ isOn, onToggle, disabled = false, labelOn = 'Pausar músi
 }
 
 function App() {
+  const { alert } = useDialog()
   // core state
   const [cameraActive, setCameraActive] = useState(false)
   const [microphoneActive, setMicrophoneActive] = useState(false)
@@ -106,7 +108,7 @@ function App() {
           setVideoDevices(vids)
           if (!selectedDeviceId && vids.length > 0) setSelectedDeviceId(vids[0].deviceId)
         } catch (e2) {
-          alert('Erro ao acessar a câmera: ' + (err?.message || e2?.message))
+          alert({ title: 'Permissão da câmera', message: 'Erro ao acessar a câmera: ' + (err?.message || e2?.message), icon: '📷' })
         }
       }
     }
@@ -158,6 +160,18 @@ function App() {
     const seen = localStorage.getItem('seenDifficultyModal')
     if (!seen) setShowDifficultyModal(true)
   }, [])
+
+  // Close modals with Escape for better accessibility
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === 'Escape') {
+        if (showDifficultyModal) { setShowDifficultyModal(false); localStorage.setItem('seenDifficultyModal','1') }
+        if (showAboutModal) setShowAboutModal(false)
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [showDifficultyModal, showAboutModal])
 
   // Navegação via evento do jogo
   useEffect(() => {
@@ -875,7 +889,7 @@ function App() {
     }
     templatesRef.current.push(tpl)
     if (window.updateStats) { window.updateStats('templatesCaptured', 1); window.updateStats('usedAI', true, 'flag') }
-    alert('Template capturado! Agora a detecção usa esse padrão.')
+  alert({ title: 'Template capturado', message: 'Agora a detecção usa esse padrão.', icon: '✨' })
   }
 
   // take snapshot
@@ -952,7 +966,7 @@ function App() {
   {view === 'home' && (
     <main className="snap-y relative z-10" aria-label="Início">
       {/* HERO */}
-      <section className="snap-start min-h-[95vh] flex items-center justify-center relative" aria-labelledby="hero-title">
+  <section className="snap-start min-h-[95vh] flex items-center justify-center relative" aria-labelledby="hero-title">
         {/* Elementos decorativos infantis */}
         <div className="absolute inset-0 pointer-events-none">
           <motion.div 
@@ -984,7 +998,7 @@ function App() {
             🦋
           </motion.div>
         </div>
-        <div className="mx-auto max-w-5xl px-4 py-8 w-full">
+  <div className="container py-8 w-full">
           <div className="glass-elevated rounded-3xl p-8 sm:p-12 relative overflow-hidden text-center">
             <div className="absolute inset-0 bg-gradient-to-br from-[var(--sitio-yellow)]/10 via-[var(--sitio-green)]/5 to-[var(--sitio-blue)]/10 pointer-events-none"></div>
             <div className="relative z-10">
@@ -1058,38 +1072,8 @@ function App() {
         </div>
       </section>
 
-      {/* FEATURES GRID (movido para 'Quem somos') */}
-      {false && (
-      <section className="snap-start py-16" aria-label="Destaques do jogo">
-        <div className="mx-auto max-w-6xl px-4">
-          <motion.div className="text-center mb-12" initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.4 }} transition={{ duration: .6, ease: [0.22,1,0.36,1] }}>
-            <h3 className="text-4xl font-black bg-gradient-to-r from-[var(--sitio-green)] to-[var(--sitio-yellow)] bg-clip-text text-transparent mb-4">✨ Recursos Especiais</h3>
-            <p className="text-[var(--fg-muted)] max-w-2xl mx-auto text-lg">Explore um mundo onde tecnologia e literatura se encontram</p>
-          </motion.div>
-          <motion.div 
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
-            initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.3 }}
-            variants={{ hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0, transition: { staggerChildren: 0.08 } } }}
-          >
-            {[
-              { title: 'Música dinâmica', desc: 'Trilha que evolui com seus acertos, como uma sinfonia rural brasileira', icon: '🎵', gradient: 'from-[var(--sitio-yellow)] to-[var(--sitio-orange)]' },
-              { title: 'IA opcional', desc: 'Câmera com reconhecimento inteligente para uma experiência híbrida', icon: '🤖', gradient: 'from-[var(--sitio-blue)] to-[var(--sitio-green)]' },
-              { title: 'Acessível', desc: 'Navegação por teclado, TTS e alto contraste para todos', icon: '♿', gradient: 'from-[var(--sitio-green)] to-[var(--sitio-yellow)]' }
-            ].map((f, i) => (
-              <motion.article key={i} variants={{ hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0 } }} className="glass-elevated rounded-2xl p-6 h-full text-center group hover:scale-105 transition-all duration-500" role="group">
-                <div className={`inline-flex p-4 rounded-2xl bg-gradient-to-r ${f.gradient} text-white text-3xl mb-4 group-hover:rotate-3 transition-transform duration-300`}>
-                  {f.icon}
-                </div>
-                <h4 className="text-xl font-extrabold text-[var(--fg)] mb-3">{f.title}</h4>
-                <p className="text-[var(--fg-muted)] leading-relaxed">{f.desc}</p>
-              </motion.article>
-            ))}
-          </motion.div>
-        </div>
-      </section>
-      )}
-
       {/* DIFFICULTY PICKER */}
+      {false && (
       <section className="snap-start py-16" aria-label="Escolher dificuldade">
         <div className="mx-auto max-w-4xl px-4">
           <div className="glass-elevated rounded-3xl p-8 relative overflow-hidden">
@@ -1170,11 +1154,12 @@ function App() {
           </div>
         </div>
       </section>
-    </main>
+      )}
+      </main>
     )}
   {/* Vision controls */}
   {view === 'vision' && (
-        <div className="relative z-10 mx-auto max-w-5xl px-4 py-4">
+  <div className="relative z-10 container px-4 py-4">
           <div className="glass rounded-2xl p-4 mb-4">
             <div className="flex flex-wrap gap-3 items-center">
               <button className={`px-4 py-2.5 rounded-xl font-semibold transition-all ${
@@ -1222,9 +1207,9 @@ function App() {
       )}
 
       {/* Main area */}
-      <div className="mx-auto max-w-5xl px-4 pb-12">
+      <div className="container pb-12">
         {view === 'game' && (
-          <div className="memory-game">
+          <div className="memory-game stage-center">
             <Suspense fallback={<p>Carregando jogo...</p>}>
               <MemoryGame musicPlaying={musicPlaying} setMusicPlaying={setMusicPlaying} />
             </Suspense>
@@ -1232,7 +1217,7 @@ function App() {
         )}
         {view === 'vision' && (
           cameraActive ? (
-            <div className="camera-view mx-auto max-w-3xl bg-white/30 backdrop-blur-md border border-[var(--theme-primary,#FFD700)]/30 rounded-2xl p-4 shadow-xl">
+            <div className="camera-view stage-center mx-auto max-w-3xl bg-white/30 backdrop-blur-md border border-[var(--theme-primary,#FFD700)]/30 rounded-2xl p-4 shadow-xl">
               <div style={{ position:'relative' }}>
                 <video ref={videoRef} autoPlay playsInline width={480} height={360} style={{ borderRadius: '1rem', boxShadow: '0 2px 12px rgba(0,0,0,0.25)', marginBottom: '0.5rem' }} />
                 {/* Moldura fantasma para orientar centralização */}
@@ -1252,7 +1237,7 @@ function App() {
               <div style={{ display: 'flex', gap: '.5rem', justifyContent: 'center', flexWrap: 'wrap' }}>
                 <button onClick={captureTemplate} className="small-btn">Capturar Template</button>
                 <button onClick={takeSnapshot} className="small-btn">Tirar Foto</button>
-                <button onClick={() => { templatesRef.current = []; setSnapshots([]); alert('Templates e fotos limpos') }} className="small-btn">Limpar Tudo</button>
+                <button onClick={() => { templatesRef.current = []; setSnapshots([]); alert({ title: 'Limpo!', message: 'Templates e fotos foram apagados.', icon: '🧹' }) }} className="small-btn">Limpar Tudo</button>
                 <a href="./printable-cards.html" target="_blank" rel="noopener" className="small-btn">📄 Cartas imprimíveis</a>
               </div>
               <p style={{ fontWeight: 700, textShadow: '0 2px 6px rgba(0,0,0,.35)' }}>
@@ -1271,7 +1256,7 @@ function App() {
               )}
             </div>
           ) : (
-            <div className="camera-placeholder text-center mx-auto max-w-3xl bg-white/30 backdrop-blur-md border border-[var(--theme-primary,#FFD700)]/30 rounded-2xl p-10 shadow-xl">
+            <div className="camera-placeholder stage-center text-center mx-auto max-w-3xl bg-white/30 backdrop-blur-md border border-[var(--theme-primary,#FFD700)]/30 rounded-2xl p-10 shadow-xl">
               <p className="font-extrabold text-[var(--theme-text,#2F4F2F)]">Clique em "Ligar Câmera" para começar!</p>
             </div>
           )
@@ -1379,7 +1364,7 @@ function App() {
         )}
       </AnimatePresence>
       {/* Seção de controles adicionais antes do footer */}
-      {view !== 'game' && (
+      {false && view !== 'game' && (
         <section className="relative mt-8 mb-8">
           <div className="mx-auto max-w-6xl px-4">
             <div className="bg-gradient-to-br from-[var(--theme-primary,#FFD700)]/10 to-[var(--theme-secondary,#8B4513)]/10 backdrop-blur-md rounded-3xl border border-[var(--theme-primary,#FFD700)]/20 p-6 shadow-xl">
@@ -1399,7 +1384,7 @@ function App() {
                 </button>
                 <button 
                   className="px-4 py-2 rounded-xl bg-white/20 backdrop-blur-sm text-[var(--theme-text,#2F4F2F)] font-semibold hover:bg-white/30 border border-[var(--theme-primary,#FFD700)]/30 transition-all"
-                  onClick={() => alert('Funcionalidades em desenvolvimento!')}
+                  onClick={() => alert({ title: 'Em breve', message: 'Funcionalidades em desenvolvimento!', icon: '🚧' })}
                 >
                   ⚙️ Configurações
                 </button>

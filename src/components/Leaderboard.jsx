@@ -45,14 +45,16 @@ function Leaderboard({ onClose, newScore = null, difficulty = 'easy', moves = 0,
     const sorted = existing.sort((a, b) => b.score - a.score).slice(0, 50)
     localStorage.setItem('gameLeaderboard', JSON.stringify(sorted))
     
-    setLeaderboard(sorted.slice(0, 10))
-    setShowNameInput(false)
-    setPlayerName('')
+  setLeaderboard(sorted.slice(0, 10))
+  setShowNameInput(false)
+  setPlayerName('')
     
     // Update achievements
     if (window.updateStats) {
       window.updateStats('leaderboardEntries', 1)
     }
+    // After saving, close the leaderboard so a new game can start
+    try { onClose?.() } catch {}
   }
 
   const getDifficultyColor = (diff) => {
@@ -149,6 +151,11 @@ function Leaderboard({ onClose, newScore = null, difficulty = 'easy', moves = 0,
         <div className="leaderboard-footer">
           <p>🎯 Complete jogos para entrar no ranking!</p>
           <p>📊 Pontuação considera tempo, movimentos e dificuldade</p>
+          <div style={{ marginTop: '0.5rem', display: 'flex', justifyContent: 'center' }}>
+            <button onClick={() => onClose?.()} className="close-btn" style={{ padding: '.6rem 1rem', borderRadius: '0.75rem', fontWeight: 900, background: 'linear-gradient(90deg, var(--sitio-green,#22c55e), var(--sitio-yellow,#facc15))', color: '#123', border: 'none' }}>
+              🔁 Jogar novamente
+            </button>
+          </div>
         </div>
       </div>
     </div>

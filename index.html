@@ -16,43 +16,82 @@
     <link rel="manifest" href="/manifest.json" />
     <title>Sítio do Pica-Pau IA</title>
     
+  <!-- Kid-friendly rounded fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700;800&family=Nunito+Rounded:wght@400;600;700;800&display=swap" rel="stylesheet">
+    
     <style>
       /* Critical CSS for mobile loading */
+      :root{
+        --sitio-yellow:#FFD700; --sitio-orange:#FFA500; --sitio-green:#32CD32; --sitio-blue:#00BFFF; --sitio-brown:#2F4F2F;
+      }
       body {
         margin: 0;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-          'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-          sans-serif;
+        font-family: 'Baloo 2', 'Nunito Rounded', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
-        background: #ffffff;
-        color: #111111;
-        overflow-x: hidden;
+        background: radial-gradient(1200px 800px at 20% 10%, rgba(255,215,0,0.25), transparent 60%),
+                    radial-gradient(1000px 700px at 80% 30%, rgba(255,165,0,0.20), transparent 60%),
+                    linear-gradient(135deg, #FFF8DC 0%, #F0FFF0 50%, #FFFACD 100%);
+        color: var(--sitio-brown);
+        overflow: hidden;
         -webkit-tap-highlight-color: transparent;
         -webkit-touch-callout: none;
         -webkit-user-select: none;
         user-select: none;
       }
+      #root{ min-height:100vh; min-height:100dvh; }
       
-      #root {
-        min-height: 100vh;
-        min-height: 100dvh;
+      /* Futuristic Loading */
+      .loading{
+        position:relative; inset:0; display:grid; place-items:center; height:100dvh;
       }
+      .bg-orbs{ position:absolute; inset:0; pointer-events:none; overflow:hidden; }
+      .bg-orbs .orb{ position:absolute; border-radius:50%; filter:blur(58px); opacity:.28; animation:float 16s ease-in-out infinite; }
+      .bg-orbs .o1{ width:380px; height:380px; background:var(--sitio-yellow); top:-80px; left:-80px; }
+      .bg-orbs .o2{ width:320px; height:320px; background:var(--sitio-green); bottom:-90px; right:-60px; animation-delay:-5s; }
+      .bg-orbs .o3{ width:260px; height:260px; background:var(--sitio-blue); top:40%; left:70%; animation-delay:-10s; }
+      @keyframes float{ 0%{ transform:translateY(0) translateX(0) scale(1);} 50%{ transform:translateY(-22px) translateX(10px) scale(1.04);} 100%{ transform:translateY(0) translateX(0) scale(1);} }
       
-      /* Loading indicator */
-      .loading {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        height: 100vh;
-        font-size: 1.2rem;
-        color: #FFD700;
+      .loader-card{
+        position:relative; padding:1.25rem 1.5rem; border-radius:1.25rem; 
+        background:rgba(255,255,255,0.8); backdrop-filter:blur(16px) saturate(140%);
+        -webkit-backdrop-filter:blur(16px) saturate(140%);
+        border:1px solid rgba(255,255,255,0.6); box-shadow:0 20px 60px rgba(0,0,0,0.25);
+        text-align:center; min-width: 260px;
       }
+      .ring{ width:90px; height:90px; margin:0 auto 10px; border-radius:50%;
+        background:
+          conic-gradient(from 0deg, var(--sitio-green), var(--sitio-yellow), var(--sitio-orange), var(--sitio-red, #FF4500), var(--sitio-green));
+        -webkit-mask: radial-gradient(circle 38px, transparent 40px, #000 41px);
+                mask: radial-gradient(circle 38px, transparent 40px, #000 41px);
+        animation: spin 2.2s linear infinite;
+        box-shadow: 0 0 30px rgba(255,215,0,.35), inset 0 0 20px rgba(255,255,255,.35);
+      }
+      @keyframes spin{ to { transform: rotate(360deg); } }
+      .logo{ font-size:2.2rem; line-height:1; text-shadow:0 4px 16px rgba(0,0,0,.25); }
+      .title{ font-weight:900; margin-top:.25rem; background:linear-gradient(90deg,var(--sitio-yellow),var(--sitio-orange)); -webkit-background-clip:text; background-clip:text; color:transparent; text-shadow:0 2px 6px rgba(0,0,0,.25); }
+      .bar{ width: 180px; height:10px; border-radius:999px; margin:.8rem auto 0; background:linear-gradient(90deg, rgba(0,0,0,.08), rgba(0,0,0,.05)); overflow:hidden; border:1px solid rgba(0,0,0,.12); }
+      .bar span{ display:block; height:100%; width:40%; border-radius:inherit; background: linear-gradient(90deg, var(--sitio-blue), var(--sitio-green)); animation: load 1.4s ease-in-out infinite; box-shadow:0 4px 14px rgba(50,205,50,.35); }
+      @keyframes load{ 0%{ transform:translateX(-50%);} 50%{ transform:translateX(160%);} 100%{ transform:translateX(-50%);} }
     </style>
   </head>
   <body>
     <div id="root">
-      <div class="loading">🏡 Carregando o Sítio...</div>
+      <div class="loading">
+        <div class="bg-orbs" aria-hidden>
+          <span class="orb o1"></span>
+          <span class="orb o2"></span>
+          <span class="orb o3"></span>
+        </div>
+        <div class="loader-card" role="status" aria-live="polite" aria-label="Carregando">
+          <div class="ring" aria-hidden></div>
+          <div class="logo">🏡</div>
+          <div class="title">Sítio do Pica-Pau IA</div>
+          <div class="bar"><span></span></div>
+        </div>
+      </div>
     </div>
     <script type="module" src="/src/main.jsx"></script>
     <script>

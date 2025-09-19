@@ -1,0 +1,14 @@
+/* Minimal glass-styled dialog consistent with app theme */
+.dialog-overlay { position: fixed; inset: 0; z-index: 80; display: grid; place-items: center; }
+.dialog-backdrop { position: absolute; inset:0; background: rgba(0,0,0,0.45); backdrop-filter: blur(2px); }
+.dialog-modal { position: relative; max-width: 520px; width: calc(100% - 2rem); padding: 1.25rem; border-radius: 1rem; background: rgba(255,255,255,0.75); color: var(--fg, #1f2937); border: 1px solid rgba(255,255,255,0.35); box-shadow: 0 20px 40px rgba(0,0,0,0.35); backdrop-filter: blur(10px) saturate(140%); }
+:root.dark .dialog-modal { background: rgba(17,25,40,0.75); color: #e5e7eb; border-color: rgba(255,255,255,0.12); }
+.dialog-icon { font-size: 2rem; margin-bottom: .25rem; }
+.dialog-title { margin: 0 0 .25rem 0; font-weight: 900; font-size: 1.25rem; }
+.dialog-message { opacity: .9; font-size: .95rem; margin-bottom: .75rem; }
+.dialog-actions { display: flex; gap: .5rem; justify-content: flex-end; }
+.btn { padding: .6rem 1rem; border-radius: .75rem; font-weight: 800; cursor: pointer; border: 1px solid var(--border, rgba(0,0,0,0.1)); }
+.btn.glass { background: rgba(255,255,255,0.5); color: var(--fg, #1f2937); }
+:root.dark .btn.glass { background: rgba(255,255,255,0.08); color: #e5e7eb; border-color: rgba(255,255,255,0.18); }
+.btn.primary { background: linear-gradient(90deg, var(--sitio-green, #22c55e), var(--sitio-yellow, #facc15)); color: #123; border: none; }
+.btn.primary:focus, .btn.glass:focus { outline: none; box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.5); }
