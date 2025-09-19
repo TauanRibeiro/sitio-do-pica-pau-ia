@@ -229,6 +229,7 @@ export default function MemoryGame({ musicPlaying }) {
   const [finalScore, setFinalScore] = useState(null)
   const [gridCols, setGridCols] = useState(3)
   const [cardPx, setCardPx] = useState(120)
+  const [showRotateHint, setShowRotateHint] = useState(false)
   // Setup audio initialization callback
   useEffect(() => {
     console.log('🎵 Setting up audio engine initialization callback...')
@@ -514,9 +515,21 @@ export default function MemoryGame({ musicPlaying }) {
     const onResize = () => recalcGrid()
     window.addEventListener('resize', onResize)
     window.addEventListener('orientationchange', onResize)
+    // Small-landscape rotate hint
+    const check = () => {
+      const vw = window.visualViewport?.width || window.innerWidth
+      const vh = window.visualViewport?.height || window.innerHeight
+      const smallLandscape = vw > vh && vw < 900
+      setShowRotateHint(smallLandscape)
+    }
+    window.addEventListener('resize', check)
+    window.addEventListener('orientationchange', check)
+    check()
     return () => {
       window.removeEventListener('resize', onResize)
       window.removeEventListener('orientationchange', onResize)
+      window.removeEventListener('resize', check)
+      window.removeEventListener('orientationchange', check)
     }
   }, [recalcGrid])
 
@@ -524,6 +537,16 @@ export default function MemoryGame({ musicPlaying }) {
 
   return (
     <div className={containerClass} style={{ ['--cols']: gridCols, ['--card-size']: `${cardPx}px` }}>
+      {showRotateHint && (
+        <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.6)', zIndex:2000, display:'flex', alignItems:'center', justifyContent:'center' }}>
+          <div style={{ background:'#fff', color:'#000', border:'4px solid #000', borderRadius:16, padding:'1rem 1.25rem', maxWidth:420, textAlign:'center', fontWeight:800 }}>
+            <div style={{ fontSize:'2rem', marginBottom:'.25rem' }}>📱↻</div>
+            <div style={{ fontSize:'1.05rem', marginBottom:'.25rem' }}>Gire o dispositivo</div>
+            <div style={{ fontSize:'.95rem', opacity:.85 }}>Para jogar melhor, use o modo retrato.</div>
+            <button onClick={() => setShowRotateHint(false)} className="small-btn" style={{ marginTop:'.75rem' }}>Continuar assim</button>
+          </div>
+        </div>
+      )}
       {showCelebration && (
         <div className="celebration-overlay">
           <div className="celebration-text">

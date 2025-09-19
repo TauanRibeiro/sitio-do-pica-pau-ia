@@ -948,15 +948,14 @@ function App() {
         <h1 className="text-lg sm:text-xl font-black text-with-bg hidden sm:block">Sítio IA</h1>
       </div>
       <div className="flex items-center gap-2">
-        {/* Botão de câmera rápido, sempre visível no header */}
+        {/* Botão de câmera rápido, ícone redondo em todos tamanhos */}
         <button
           onClick={() => { setView('vision'); setCameraActive(true) }}
-          className="px-3 py-2 sm:px-4 sm:py-2 rounded-xl glass hover:glass-elevated text-[var(--fg)] font-semibold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-yellow-400 text-xs sm:text-sm"
+          className="grid place-items-center w-12 h-12 rounded-full glass hover:glass-elevated text-[var(--fg)] transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-yellow-400 shadow-md hover:scale-105"
           aria-label="Abrir câmera"
           title="Abrir câmera"
         >
-          <span className="hidden sm:inline">Câmera</span>
-          <span className="sm:hidden text-lg">📷</span>
+          <span className="text-lg">📷</span>
         </button>
         <button 
           onClick={() => setShowAboutModal(true)}

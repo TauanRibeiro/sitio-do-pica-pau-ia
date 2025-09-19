@@ -186,7 +186,7 @@
   position: relative; 
   /* Make cards subtly portrait: height ~1.2x width */
   width: var(--card-size);
-  height: calc(var(--card-size) * 1.2);
+  height: calc(var(--card-size) * 1.3);
   border-radius: 20px; 
   cursor: pointer; 
   perspective: 1000px; 
@@ -250,9 +250,9 @@
 
 .card .front img { 
   /* Show full character PNG inside portrait card */
-  width: calc(var(--card-size) * 0.8); 
-  height: calc(var(--card-size) * 0.95); 
-  max-height: calc(100% - 2.1rem); /* leave room for name */
+  width: calc(var(--card-size) * 0.86); 
+  height: calc(var(--card-size) * 1.05); 
+  max-height: calc(100% - 2.2rem); /* leave room for name */
   border-radius: 16px; 
   box-shadow: 0 6px 20px rgba(0,0,0,0.3); 
   margin-bottom: 0.4rem; 
