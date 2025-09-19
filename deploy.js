@@ -82,7 +82,13 @@ try {
     if (fs.statSync(src).isDirectory()) {
       fs.cpSync(src, dest, { recursive: true });
     } else {
-      fs.copyFileSync(src, dest);
+      // Use explicit UTF-8 encoding for text files to prevent encoding issues
+      if (file.endsWith('.html') || file.endsWith('.js') || file.endsWith('.css') || file.endsWith('.json') || file.endsWith('.svg') || file.endsWith('.xml')) {
+        const content = fs.readFileSync(src, 'utf8');
+        fs.writeFileSync(dest, content, 'utf8');
+      } else {
+        fs.copyFileSync(src, dest);
+      }
     }
   }
 
