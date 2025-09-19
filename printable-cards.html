@@ -9,6 +9,7 @@
     .header{text-align:center;margin-bottom:2rem}
     .header h1{color:#8B4513;margin:0;font-size:2.5rem}
     .page{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;max-width:1000px;margin:0 auto}
+    .gallery{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;max-width:1000px;margin:0.5rem auto 2rem}
     .card{border:3px solid #8B4513;border-radius:16px;aspect-ratio:3/4;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:900;background:#fff;box-shadow:0 4px 8px rgba(0,0,0,0.1);padding:8px}
     .card img{max-width:80%;max-height:70%;object-fit:contain;border-radius:8px}
     .card .name{margin-top:8px;font-size:0.9rem;text-align:center;color:#8B4513}
@@ -16,8 +17,8 @@
     .print-btn{background:#32CD32;color:white;border:none;padding:10px 20px;border-radius:8px;font-weight:bold;cursor:pointer;margin-left:10px}
     .print-btn:hover{background:#28a745}
     @media print{.hint,.print-btn{display:none} body{padding:0;background:white} .page{gap:8px}}
-    @media (max-width: 768px){.page{grid-template-columns:repeat(3,1fr)} .card{font-size:0.8rem}}
-    @media (max-width: 480px){.page{grid-template-columns:repeat(2,1fr)}}
+    @media (max-width: 768px){.page{grid-template-columns:repeat(3,1fr)} .gallery{grid-template-columns:repeat(3,1fr)} .card{font-size:0.8rem}}
+    @media (max-width: 480px){.page{grid-template-columns:repeat(2,1fr)} .gallery{grid-template-columns:repeat(2,1fr)}}
   </style>
   <meta name="robots" content="noindex" />
   <meta name="color-scheme" content="light" />
@@ -25,7 +26,7 @@
   <link rel="icon" href="favicon.ico" />
   <meta name="x-robots-tag" content="noai, noimageai" />
   <meta http-equiv="Permissions-Policy" content="interest-cohort=()" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; img-src 'self' data: blob:;" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src 'self' data: blob:;" />
   
 </head>
 <body>
@@ -35,10 +36,13 @@
   
   <div class="hint">
     Imprima em papel A4, recorte nas bordas e use em ambiente claro para melhor detecção pela IA. 
-    <button class="print-btn" onclick="window.print()">🖨️ Imprimir</button>
+    <button class="print-btn" id="printBtn">🖨️ Imprimir</button>
   </div>
   
   <div class="page" id="grid"></div>
+  
+  <h2 class="section-title" style="text-align:center;color:#8B4513;margin:1.25rem 0 0.5rem 0;">Visualização de todas as cartas</h2>
+  <div class="gallery" id="gallery"></div>
   
   <script>
     const characters = [
@@ -56,7 +60,8 @@
       { name: 'Conselheiro', img: './characters/conselheiro.png' }
     ];
 
-    const grid = document.getElementById('grid');
+  const grid = document.getElementById('grid');
+  const gallery = document.getElementById('gallery');
     
     const createCard = (character) => {
       const card = document.createElement('div');
@@ -92,9 +97,47 @@
       [allCards[i], allCards[j]] = [allCards[j], allCards[i]];
     }
     
-    // Adiciona todas as cartas à grid
+    // Adiciona todas as cartas à grid (pares, embaralhadas) para impressão
     allCards.forEach(character => {
       grid.appendChild(createCard(character));
+    });
+
+    // Mostra uma galeria com todas as cartas (uma de cada), viradas (frente)
+    characters.forEach(character => {
+      gallery.appendChild(createCard(character));
+    });
+
+    // Utilitário para baixar um Blob com nome
+    function downloadBlob(blob, filename) {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    // Baixa todos os PNGs dos personagens
+    async function downloadAllCards() {
+      for (const c of characters) {
+        try {
+          const res = await fetch(c.img, { cache: 'no-store' });
+          const blob = await res.blob();
+          const fname = (c.img.split('/').pop()) || 'carta.png';
+          downloadBlob(blob, fname);
+        } catch (e) {
+          console.warn('Falha ao baixar', c.img, e);
+        }
+      }
+    }
+
+    // Clique em imprimir: baixa todas e chama o print
+    document.getElementById('printBtn')?.addEventListener('click', async () => {
+      // dispara downloads em sequência e imprime em seguida
+      downloadAllCards().catch(()=>{});
+      setTimeout(() => window.print(), 400);
     });
   </script>
 </body>
