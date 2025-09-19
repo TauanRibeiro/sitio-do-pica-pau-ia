@@ -443,14 +443,14 @@ function App() {
         {showDifficultyModal && (
           <motion.div style={{ position:'fixed', inset:0, zIndex: 2400, display:'flex', alignItems:'center', justifyContent:'center', padding:'1rem' }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             <div style={{ position:'absolute', inset:0, background:'rgba(0,0,0,0.45)', backdropFilter:'blur(2px)' }} onClick={() => setShowDifficultyModal(false)} />
-            <motion.div className="relative glass-elevated rounded-3xl max-w-md w-full p-6" initial={{ y: 30, opacity: 0, scale: 0.98 }} animate={{ y: 0, opacity: 1, scale: 1 }} exit={{ y: 30, opacity: 0, scale: 0.98 }} transition={{ type: 'spring', stiffness: 220, damping: 22 }}>
-              <h3 className="text-xl font-black mb-4">Escolha a Dificuldade</h3>
-              <div className="grid grid-cols-1 gap-3 mb-6">
+            <motion.div className="relative glass-elevated rounded-3xl max-w-sm w-full p-8 mx-4" initial={{ y: 30, opacity: 0, scale: 0.98 }} animate={{ y: 0, opacity: 1, scale: 1 }} exit={{ y: 30, opacity: 0, scale: 0.98 }} transition={{ type: 'spring', stiffness: 220, damping: 22 }}>
+              <h3 className="text-xl font-black mb-6 text-center">Escolha a Dificuldade</h3>
+              <div className="grid grid-cols-1 gap-4 mb-6">
                 {['easy', 'medium', 'hard'].map(level => (
                   <button 
                     key={level}
                     onClick={() => setPendingDifficulty(level)}
-                    className={`px-4 py-3 rounded-xl text-left font-bold transition-all ${pendingDifficulty === level ? 'bg-[var(--sitio-green)] text-white ring-2 ring-white/50' : 'glass hover:glass-elevated'}`}
+                    className={`px-4 py-4 rounded-xl text-left font-bold transition-all text-sm ${pendingDifficulty === level ? 'bg-[var(--sitio-green)] text-white ring-2 ring-white/50' : 'glass hover:glass-elevated'}`}
                   >
                     {level === 'easy' && 'Fácil (4 pares)'}
                     {level === 'medium' && 'Médio (8 pares)'}
@@ -458,10 +458,10 @@ function App() {
                   </button>
                 ))}
               </div>
-              <div className="flex justify-end gap-2">
-                <button className="px-4 py-2 rounded-xl glass" onClick={() => setShowDifficultyModal(false)}>Cancelar</button>
+              <div className="flex justify-end gap-3">
+                <button className="px-4 py-3 rounded-xl glass text-sm font-bold" onClick={() => setShowDifficultyModal(false)}>Cancelar</button>
                 <button 
-                  className="px-4 py-2 rounded-xl bg-gradient-to-r from-[var(--sitio-green)] to-[var(--sitio-blue)] text-white font-bold" 
+                  className="px-4 py-3 rounded-xl bg-gradient-to-r from-[var(--sitio-green)] to-[var(--sitio-blue)] text-white font-bold text-sm" 
                   onClick={() => {
                     localStorage.setItem('memoryDifficulty', pendingDifficulty);
                     setShowDifficultyModal(false);
@@ -478,28 +478,28 @@ function App() {
         {showAudioModal && (
           <motion.div style={{ position:'fixed', inset:0, zIndex: 2400, display:'flex', alignItems:'center', justifyContent:'center', padding:'1rem' }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             <div style={{ position:'absolute', inset:0, background:'rgba(0,0,0,0.45)', backdropFilter:'blur(2px)' }} onClick={() => setShowAudioModal(false)} />
-            <motion.div className="relative glass-elevated rounded-3xl max-w-md w-full p-6" initial={{ y: 30, opacity: 0, scale: 0.98 }} animate={{ y: 0, opacity: 1, scale: 1 }} exit={{ y: 30, opacity: 0, scale: 0.98 }} transition={{ type: 'spring', stiffness: 220, damping: 22 }}>
-              <h3 className="text-xl font-black mb-2">Configurações de Áudio</h3>
-              <div className="mb-4">
-                <label className="block font-bold mb-1">Volume da trilha</label>
+            <motion.div className="relative glass-elevated rounded-3xl max-w-md w-full p-8 mx-4" initial={{ y: 30, opacity: 0, scale: 0.98 }} animate={{ y: 0, opacity: 1, scale: 1 }} exit={{ y: 30, opacity: 0, scale: 0.98 }} transition={{ type: 'spring', stiffness: 220, damping: 22 }}>
+              <h3 className="text-xl font-black mb-4 text-center">Configurações de Áudio</h3>
+              <div className="mb-6">
+                <label className="block font-bold mb-2 text-sm">Volume da trilha</label>
                 <input type="range" min={0} max={1} step={0.01} value={musicVolume} onChange={e => setMusicVolume(Number(e.target.value))} className="w-full" />
               </div>
-              <div className="mb-4">
-                <label className="block font-bold mb-1">Volume da fala (leitura de tela)</label>
+              <div className="mb-6">
+                <label className="block font-bold mb-2 text-sm">Volume da fala (leitura de tela)</label>
                 <input type="range" min={0} max={1} step={0.01} value={speechVolume} onChange={e => setSpeechVolume(Number(e.target.value))} className="w-full" />
               </div>
-              <div className="mb-4">
-                <label className="block font-bold mb-1">Volume dos toques (SFX)</label>
+              <div className="mb-6">
+                <label className="block font-bold mb-2 text-sm">Volume dos toques (SFX)</label>
                 <input type="range" min={0} max={1} step={0.01} value={sfxVolume} onChange={e => setSfxVolume(Number(e.target.value))} className="w-full" />
               </div>
-              <div className="mb-4">
-                <label className="inline-flex items-center gap-2 font-bold">
+              <div className="mb-6">
+                <label className="inline-flex items-center gap-2 font-bold text-sm">
                   <input type="checkbox" checked={ttsEnabled} onChange={e => setTtsEnabled(e.target.checked)} />
                   Ativar leitura de tela (TTS)
                 </label>
               </div>
-              <div className="flex justify-end gap-2">
-                <button className="px-4 py-2 rounded-xl bg-gradient-to-r from-[var(--sitio-green)] to-[var(--sitio-blue)] text-white font-bold" onClick={() => setShowAudioModal(false)}>Fechar</button>
+              <div className="flex justify-end gap-3">
+                <button className="px-6 py-3 rounded-xl bg-gradient-to-r from-[var(--sitio-green)] to-[var(--sitio-blue)] text-white font-bold text-sm" onClick={() => setShowAudioModal(false)}>Fechar</button>
               </div>
             </motion.div>
           </motion.div>
@@ -508,11 +508,11 @@ function App() {
       {showAboutModal && (
         <motion.div style={{ position:'fixed', inset:0, zIndex: 2400, display:'flex', alignItems:'center', justifyContent:'center', padding:'1rem' }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
         <div style={{ position:'absolute', inset:0, background:'rgba(0,0,0,0.45)', backdropFilter:'blur(2px)' }} onClick={() => setShowAboutModal(false)} />
-        <motion.div className="relative glass-elevated rounded-3xl max-w-lg w-full p-6 text-center" initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 30, opacity: 0 }}>
-                <h3 className="text-2xl font-black mb-4">Sobre o Projeto</h3>
-                <p className="mb-4">Este é um projeto de demonstração para a Feira de Ciências, combinando o universo de Monteiro Lobato com tecnologias de Inteligência Artificial.</p>
-                <p className="font-bold">Desenvolvido por: Malie, Tauan, Carla e Vovó Jane.</p>
-                <button className="mt-6 px-4 py-2 rounded-xl bg-gradient-to-r from-[var(--sitio-green)] to-[var(--sitio-blue)] text-white font-bold" onClick={() => setShowAboutModal(false)}>Fechar</button>
+        <motion.div className="relative glass-elevated rounded-3xl max-w-lg w-full p-8 mx-4 text-center" initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 30, opacity: 0 }}>
+                <h3 className="text-2xl font-black mb-6">Sobre o Projeto</h3>
+                <p className="mb-6 text-sm leading-relaxed">Este é um projeto de demonstração para a Feira de Ciências, combinando o universo de Monteiro Lobato com tecnologias de Inteligência Artificial.</p>
+                <p className="font-bold mb-8 text-sm">Desenvolvido por: Malie, Tauan, Carla e Vovó Jane.</p>
+                <button className="px-6 py-3 rounded-xl bg-gradient-to-r from-[var(--sitio-green)] to-[var(--sitio-blue)] text-white font-bold text-sm" onClick={() => setShowAboutModal(false)}>Fechar</button>
             </motion.div>
         </motion.div>
         )}
