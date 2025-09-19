@@ -1,8 +1,8 @@
-name: Deploy to GitHub Pages
+name: Deploy to GitHub Pages (manual)
 
+# Disabled automatic deploys to avoid conflict with custom gh-pages deploy.
+# Run manually from Actions tab if needed.
 on:
-  push:
-    branches: [ master ]
   workflow_dispatch:
 
 permissions:
