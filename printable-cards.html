@@ -3,36 +3,99 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Cartas Imprimíveis - Sítio</title>
+  <title>Cartas Imprimíveis - Sítio do Pica-Pau Amarelo</title>
   <style>
-    body{font-family:system-ui,Segoe UI,Arial,sans-serif;margin:0;padding:1rem}
-    .page{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-    .card{border:3px solid #000;border-radius:12px;aspect-ratio:3/4;display:flex;align-items:center;justify-content:center;font-weight:900}
-    .hint{margin:.75rem 0;font-weight:700}
-    @media print{.hint{display:none} body{padding:0}}
+    body{font-family:system-ui,Segoe UI,Arial,sans-serif;margin:0;padding:1rem;background:#f5f5f5}
+    .header{text-align:center;margin-bottom:2rem}
+    .header h1{color:#8B4513;margin:0;font-size:2.5rem}
+    .page{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;max-width:1000px;margin:0 auto}
+    .card{border:3px solid #8B4513;border-radius:16px;aspect-ratio:3/4;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:900;background:#fff;box-shadow:0 4px 8px rgba(0,0,0,0.1);padding:8px}
+    .card img{max-width:80%;max-height:70%;object-fit:contain;border-radius:8px}
+    .card .name{margin-top:8px;font-size:0.9rem;text-align:center;color:#8B4513}
+    .hint{margin:1rem 0;font-weight:700;text-align:center;background:#FFD700;padding:1rem;border-radius:8px;color:#8B4513}
+    .print-btn{background:#32CD32;color:white;border:none;padding:10px 20px;border-radius:8px;font-weight:bold;cursor:pointer;margin-left:10px}
+    .print-btn:hover{background:#28a745}
+    @media print{.hint,.print-btn{display:none} body{padding:0;background:white} .page{gap:8px}}
+    @media (max-width: 768px){.page{grid-template-columns:repeat(3,1fr)} .card{font-size:0.8rem}}
+    @media (max-width: 480px){.page{grid-template-columns:repeat(2,1fr)}}
   </style>
   <meta name="robots" content="noindex" />
   <meta name="color-scheme" content="light" />
-  <meta name="description" content="Cartas imprimíveis de alto contraste para o jogo de memória do Sítio." />
+  <meta name="description" content="Cartas imprimíveis de alto contraste para o jogo de memória do Sítio do Pica-Pau Amarelo." />
   <link rel="icon" href="favicon.ico" />
   <meta name="x-robots-tag" content="noai, noimageai" />
   <meta http-equiv="Permissions-Policy" content="interest-cohort=()" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; img-src data:;" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; img-src 'self' data: blob:;" />
   
 </head>
 <body>
-  <h1>Cartas Imprimíveis</h1>
-  <div class="hint">Imprima em papel A4, recorte nas bordas e use em ambiente claro para melhor detecção.</div>
+  <div class="header">
+    <h1>🏡 Cartas do Sítio do Pica-Pau Amarelo</h1>
+  </div>
+  
+  <div class="hint">
+    Imprima em papel A4, recorte nas bordas e use em ambiente claro para melhor detecção pela IA. 
+    <button class="print-btn" onclick="window.print()">🖨️ Imprimir</button>
+  </div>
+  
   <div class="page" id="grid"></div>
+  
   <script>
-    const names=[
-      'Emília','Narizinho','Pedrinho','Visconde','Dona Benta','Tia Nastácia',
-      'Saci','Cuca','Rabicó','Tio Barnabé','Quindim','Conselheiro'
+    const characters = [
+      { name: 'Emília', img: './characters/emilia.png' },
+      { name: 'Narizinho', img: './characters/narizinho.png' },
+      { name: 'Pedrinho', img: './characters/pedrinho.png' },
+      { name: 'Visconde', img: './characters/visconde.png' },
+      { name: 'Dona Benta', img: './characters/dona_benta.png' },
+      { name: 'Tia Nastácia', img: './characters/tia_nastacia.png' },
+      { name: 'Saci', img: './characters/saci.png' },
+      { name: 'Cuca', img: './characters/cuca.png' },
+      { name: 'Rabicó', img: './characters/rabico.png' },
+      { name: 'Tio Barnabé', img: './characters/barnabe.png' },
+      { name: 'Quindim', img: './characters/quindim.png' },
+      { name: 'Conselheiro', img: './characters/conselheiro.png' }
     ];
-    const grid=document.getElementById('grid');
-    const make=(t)=>{const d=document.createElement('div');d.className='card';d.textContent=t;return d}
-    // duas cópias de cada (pares)
-    names.concat(names).forEach(n=>grid.appendChild(make(n)))
+
+    const grid = document.getElementById('grid');
+    
+    const createCard = (character) => {
+      const card = document.createElement('div');
+      card.className = 'card';
+      
+      const img = document.createElement('img');
+      img.src = character.img;
+      img.alt = character.name;
+      img.onerror = function() {
+        this.style.display = 'none';
+        const placeholder = document.createElement('div');
+        placeholder.textContent = '🏡';
+        placeholder.style.fontSize = '3rem';
+        this.parentElement.appendChild(placeholder);
+      };
+      
+      const name = document.createElement('div');
+      name.className = 'name';
+      name.textContent = character.name;
+      
+      card.appendChild(img);
+      card.appendChild(name);
+      
+      return card;
+    };
+
+    // Cria duas cópias de cada personagem (para formar os pares)
+    const allCards = [...characters, ...characters];
+    
+    // Embaralha as cartas
+    for (let i = allCards.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [allCards[i], allCards[j]] = [allCards[j], allCards[i]];
+    }
+    
+    // Adiciona todas as cartas à grid
+    allCards.forEach(character => {
+      grid.appendChild(createCard(character));
+    });
   </script>
 </body>
 </html>
