@@ -8,10 +8,8 @@
   min-height: 100vh;
   min-height: 100dvh;
   box-sizing: border-box;
-  background: radial-gradient(1200px 800px at 20% 10%, rgba(255,215,0,0.25), transparent 60%),
-              radial-gradient(1000px 700px at 80% 30%, rgba(255,69,0,0.18), transparent 60%),
-              linear-gradient(135deg, #FFF8DC 0%, #FDE68A 40%, #F59E0B 100%);
-  background-attachment: fixed;
+  /* Use o fundo global do app (index.css) para consistência visual */
+  background: transparent;
 }
 
 /* === HEADER DO JOGO === */
@@ -54,6 +52,18 @@
   margin-left: auto;
   margin-right: auto;
   width: 100%;
+}
+
+/* Moldura de vidro ao redor da grade, alinhada com a tela de carregamento */
+.game-frame {
+  width: min(94vw, 1120px);
+  border-radius: 24px;
+  padding: 1rem;
+  border: 1px solid var(--border, rgba(0,0,0,0.12));
+  background: var(--surface-elevated, rgba(255,255,255,0.92));
+  backdrop-filter: var(--glass, blur(16px) saturate(180%));
+  -webkit-backdrop-filter: var(--glass, blur(16px) saturate(180%));
+  box-shadow: var(--shadow-elevated, 0 20px 50px rgba(0,0,0,0.2));
 }
 
 /* === GRID DE CARTAS === */
@@ -187,7 +197,7 @@
   /* Make cards subtly portrait: height ~1.2x width */
   width: var(--card-size);
   height: calc(var(--card-size) * 1.3);
-  border-radius: 20px; 
+  border-radius: 22px; 
   cursor: pointer; 
   perspective: 1000px; 
   transition: all 0.3s ease;
@@ -214,7 +224,7 @@
   flex-direction: column; 
   align-items: center; 
   justify-content: center; 
-  border-radius: 20px; 
+  border-radius: 22px; 
   font-weight: 900; 
   font-size: 0.9rem; 
   backface-visibility: hidden; 
@@ -222,30 +232,30 @@
   transition: transform 0.6s ease, filter 0.3s ease, box-shadow 0.3s ease; 
   text-shadow: 0 2px 6px rgba(0,0,0,0.35);
   box-sizing: border-box;
-  border: 2px solid;
+  border: 1px solid rgba(255,255,255,0.5);
 }
 
 /* Frente da carta - Personagem */
 .card .front { 
-  background: linear-gradient(135deg, rgba(255,250,205,1) 0%, rgba(255,215,0,0.4) 100%);
-  border-color: var(--theme-accent, #FF4500);
+  background: linear-gradient(135deg, rgba(255,250,205,0.95) 0%, rgba(255,215,0,0.35) 100%);
+  border-color: var(--theme-accent, rgba(255,69,0,0.35));
   color: var(--theme-text, #2F4F2F); 
   transform: rotateY(180deg); 
   box-shadow: 
-    inset 0 0 0 2px rgba(255,255,255,0.5),
-    inset 0 -8px 20px rgba(0,0,0,0.1),
-    0 8px 25px rgba(255,215,0,0.3);
+    inset 0 0 0 1px rgba(255,255,255,0.6),
+    inset 0 -6px 16px rgba(0,0,0,0.08),
+    0 8px 25px rgba(255,215,0,0.25);
 }
 
 /* Verso da carta - Logo do Sítio */
 .card .back { 
-  background: linear-gradient(135deg, rgba(139,69,19,1) 0%, rgba(255,215,0,0.2) 100%);
-  border-color: var(--theme-primary, #FFD700);
+  background: linear-gradient(135deg, rgba(139,69,19,0.95) 0%, rgba(255,215,0,0.18) 100%);
+  border-color: var(--theme-primary, rgba(255,215,0,0.6));
   transform: rotateY(0deg); 
   color: var(--theme-primary, #FFD700); 
   box-shadow: 
-    0 8px 25px rgba(0,0,0,0.3),
-  inset 0 0 0 1px rgba(255,215,0,0.3);
+    0 8px 25px rgba(0,0,0,0.28),
+    inset 0 0 0 1px rgba(255,215,0,0.28);
 }
 
 .card .front img { 
@@ -258,8 +268,8 @@
   margin-bottom: 0.4rem; 
   object-fit: contain; 
   object-position: center bottom; 
-  background: rgba(255,255,255,0.35); 
-  border: 2px solid rgba(255,255,255,0.6);
+  background: rgba(255,255,255,0.4); 
+  border: 1px solid rgba(255,255,255,0.65);
 }
 
 .card .front .name { 
@@ -542,6 +552,30 @@
   box-shadow: 0 10px 24px rgba(0,0,0,0.25);
   backdrop-filter: blur(8px) saturate(130%);
 }
+
+/* Botão de configurações com estados e vidro */
+.settings-btn {
+  position: fixed;
+  top: max(12px, env(safe-area-inset-top));
+  right: 12px;
+  z-index: 3000;
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15rem;
+  box-shadow: 0 10px 24px rgba(0,0,0,0.25);
+  backdrop-filter: blur(8px) saturate(130%);
+  -webkit-backdrop-filter: blur(8px) saturate(130%);
+  color: #fff;
+  transition: transform .15s ease, filter .2s ease;
+}
+.settings-btn:hover { transform: translateY(-1px); filter: brightness(1.05);} 
+.settings-btn.ok { background: rgba(16,185,129,0.85);} /* verde */
+.settings-btn.error { background: rgba(239,68,68,0.85);} /* vermelho */
 
 /* Imersão: remove molduras internas */
 .memory-container.immersive .game-header,

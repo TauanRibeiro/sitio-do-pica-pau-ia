@@ -9,6 +9,11 @@ import os from 'os';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// Force UTF-8 encoding for Node.js operations
+process.env.NODE_OPTIONS = '--max-old-space-size=4096';
+process.stdout.setEncoding('utf8');
+process.stderr.setEncoding('utf8');
+
 console.log('🚀 Iniciando processo de deploy...');
 
 try {

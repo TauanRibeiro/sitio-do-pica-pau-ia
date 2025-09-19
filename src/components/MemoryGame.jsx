@@ -604,37 +604,17 @@ export default function MemoryGame({ musicPlaying, difficulty, onFinish, onExit 
       
       {/* Botão de configurações de áudio */}
       <button
-        className="settings-btn"
+        className={`settings-btn ${audioInitialized ? 'ok' : 'error'}`}
         onClick={() => setShowAudioSettings(true)}
         aria-label="Configurações de áudio"
         title={audioInitialized ? 'Audio funcionando - Clique para configurações' : 'Audio com problemas - Clique para verificar'}
-        style={{
-          position: 'fixed',
-          top: 'max(12px, env(safe-area-inset-top))',
-          right: '12px',
-          background: audioInitialized ? 'rgba(16,185,129,0.85)' : 'rgba(239,68,68,0.85)',
-          color: '#fff',
-          border: '1px solid rgba(255,255,255,0.25)',
-          borderRadius: '14px',
-          width: '46px',
-          height: '46px',
-          fontSize: '1.15rem',
-          cursor: 'pointer',
-          zIndex: 30,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          boxShadow: '0 10px 24px rgba(0,0,0,0.35)',
-          backdropFilter: 'blur(8px) saturate(130%)',
-          WebkitBackdropFilter: 'blur(8px) saturate(130%)',
-          transition: 'transform 0.15s ease, filter 0.2s ease'
-        }}
       >
         {audioInitialized ? '🔊' : '🔇'}
       </button>
 
       <div className="memory-layout only-grid" style={{ paddingTop: 'max(8px, env(safe-area-inset-top))', paddingBottom: 'max(8px, env(safe-area-inset-bottom))' }}>
-        <div className="grid" style={{ ['--cols']: gridCols, ['--card-size']: `${cardPx}px` }}>
+        <div className="game-frame glass-elevated">
+          <div className="grid" style={{ ['--cols']: gridCols, ['--card-size']: `${cardPx}px` }}>
           {cards.map((card, index) => (
             <div
               key={card.uniqueId}
@@ -653,6 +633,7 @@ export default function MemoryGame({ musicPlaying, difficulty, onFinish, onExit 
               </div>
             </div>
           ))}
+          </div>
         </div>
       </div>
 
