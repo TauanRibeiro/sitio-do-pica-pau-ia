@@ -176,15 +176,19 @@ class GameAudioEngine {
   }
 
   async init() {
-    if (this.isInitialized) return;
+    if (this.isInitialized) {
+      console.log('🎵 GameAudioEngine already initialized');
+      return;
+    }
     
     try {
       console.log('🎵 Initializing GameAudioEngine...');
       
       // Start Tone.js context
+      console.log('🎵 Tone.js context state before start:', Tone.getContext().state);
       if (Tone.getContext().state === 'suspended') {
         await Tone.start();
-        console.log('🎵 Audio context resumed');
+        console.log('🎵 Audio context resumed, new state:', Tone.getContext().state);
       }
       
       // Initialize audio chain
@@ -267,6 +271,102 @@ class GameAudioEngine {
 
   onAchievementUnlocked() {
     this.playSound('achievement');
+  }
+
+  // Música procedural - métodos para controle de trilha sonora
+  start(mode, options = {}) {
+    console.log('🎵 GameAudioEngine.start called with mode:', mode, 'options:', options);
+    console.log('🎵 isInitialized:', this.isInitialized, 'musicEnabled:', this.musicEnabled, 'isMobile:', this.isMobile);
+    
+    if (!this.musicEnabled || !this.isInitialized) {
+      console.log('🎵 Skipping music start - not enabled or not initialized');
+      return;
+    }
+    
+    try {
+      console.log('🎵 Starting music mode:', mode, options);
+      
+      // Para dispositivos móveis, usar sons simples baseados no modo
+      if (this.isMobile) {
+        this.playProceduralSound(mode, options);
+      } else {
+        // Para desktop, usar síntese mais complexa com Tone.js
+        this.playToneMusic(mode, options);
+      }
+    } catch (error) {
+      console.warn('Failed to start music mode:', mode, error);
+    }
+  }
+
+  playProceduralSound(mode, options) {
+    // Sons procedurais simples para mobile
+    const now = Tone.now();
+    
+    switch (mode) {
+      case 'exploration':
+        // Música de exploração - sons suaves e curiosos
+        if (this.synth) {
+          this.synth.triggerAttackRelease(['C4', 'E4', 'G4'], '4n', now);
+          this.synth.triggerAttackRelease(['D4', 'F4', 'A4'], '4n', now + 0.5);
+        }
+        break;
+      case 'action':
+        // Música de ação - sons energéticos
+        if (this.synth) {
+          this.synth.triggerAttackRelease(['E4', 'G4', 'B4'], '8n', now);
+          this.synth.triggerAttackRelease(['F4', 'A4', 'C5'], '8n', now + 0.25);
+        }
+        break;
+      case 'tension':
+        // Música de tensão - sons preocupantes
+        if (this.bass) {
+          this.bass.triggerAttackRelease('C3', '2n', now);
+        }
+        break;
+      case 'victory':
+        // Música de vitória - sons celebratórios
+        if (this.synth) {
+          this.synth.triggerAttackRelease(['C5', 'E5', 'G5', 'C6'], '4n', now);
+        }
+        break;
+      case 'puzzle':
+        // Música de quebra-cabeça - sons pensativos
+        if (this.synth) {
+          this.synth.triggerAttackRelease(['A4', 'C5', 'E5'], '4n', now);
+        }
+        break;
+      case 'reset':
+        // Reset - som sutil
+        if (this.synth) {
+          this.synth.triggerAttackRelease('C4', '16n', now);
+        }
+        break;
+    }
+  }
+
+  playToneMusic(mode, options) {
+    // Música mais complexa para desktop usando Tone.js
+    // Por enquanto, usar a mesma implementação simples
+    this.playProceduralSound(mode, options);
+  }
+
+  playVictoryMelody() {
+    if (!this.musicEnabled || !this.isInitialized) return;
+    
+    try {
+      console.log('🎵 Playing victory melody');
+      const now = Tone.now();
+      
+      if (this.synth) {
+        // Melodia de vitória: C E G C (dó maior)
+        this.synth.triggerAttackRelease('C5', '8n', now);
+        this.synth.triggerAttackRelease('E5', '8n', now + 0.25);
+        this.synth.triggerAttackRelease('G5', '8n', now + 0.5);
+        this.synth.triggerAttackRelease('C6', '4n', now + 0.75);
+      }
+    } catch (error) {
+      console.warn('Failed to play victory melody:', error);
+    }
   }
 
   // Utility methods

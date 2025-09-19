@@ -4,6 +4,7 @@ import './App.css'
 import './utils/achievements'
 import { getInitialTheme, applyTheme, toggleTheme } from './utils/theme'
 import { useDialog } from './ui/DialogContext'
+import { getAudioEngine } from './utils/audioEngine'
 
 const MemoryGame = lazy(() => import('./components/MemoryGame'))
 
@@ -160,6 +161,14 @@ function App() {
 
   // Apply theme
   useEffect(() => applyTheme(theme), [theme])
+
+  // Initialize music engine
+  useEffect(() => {
+    if (!window.sitioMusicEngine) {
+      window.sitioMusicEngine = getAudioEngine();
+      console.log('🎵 Initialized sitioMusicEngine');
+    }
+  }, [])
 
   // Handle scroll for progress bar
   useEffect(() => {
