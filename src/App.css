@@ -121,8 +121,8 @@ body::-webkit-scrollbar-thumb {
 }
 
 .home-section {
-  padding: 2rem 1rem;
-  min-height: 100vh;
+  padding: 2.5rem 1rem;
+  min-height: calc(100vh - 3rem);
   display: flex;
   align-items: center;
   justify-content: center;

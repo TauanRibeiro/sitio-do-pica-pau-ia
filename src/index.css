@@ -340,3 +340,11 @@ body::before {
 /* Animated ambient sparkles */
 .ambient-sparkles{ position: fixed; inset:0; pointer-events:none; z-index: 98; background-image: radial-gradient(circle at 25% 30%, rgba(255,215,0,.12), transparent 30%), radial-gradient(circle at 75% 70%, rgba(0,191,255,.10), transparent 30%); animation: ambientShift 12s ease-in-out infinite; }
 @keyframes ambientShift { 0%{ transform: translateY(0);} 50%{ transform: translateY(-6px);} 100%{ transform: translateY(0);} }
+
+/* Reusable orbs background (same vibe as loader) */
+.bg-orbs { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 1; }
+.bg-orbs .orb { position: absolute; border-radius: 50%; filter: blur(58px); opacity: .28; animation: float 16s ease-in-out infinite; }
+.bg-orbs .o1 { width: 380px; height: 380px; background: var(--sitio-yellow); top: -80px; left: -80px; }
+.bg-orbs .o2 { width: 320px; height: 320px; background: var(--sitio-green); bottom: -90px; right: -60px; animation-delay: -5s; }
+.bg-orbs .o3 { width: 260px; height: 260px; background: var(--sitio-blue); top: 40%; left: 70%; animation-delay: -10s; }
+@keyframes float { 0%{ transform: translateY(0) translateX(0) scale(1);} 50%{ transform: translateY(-22px) translateX(10px) scale(1.04);} 100%{ transform: translateY(0) translateX(0) scale(1);} }

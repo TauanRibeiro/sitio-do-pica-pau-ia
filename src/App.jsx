@@ -252,7 +252,13 @@ function App() {
             aria-label="Início"
           >
             <section className="home-section snap-start flex items-center justify-center relative" aria-labelledby="hero-title">
-              <div className="home-container py-8 w-full">
+              {/* Ambient orbs like loader */}
+              <div className="bg-orbs" aria-hidden>
+                <span className="orb o1"></span>
+                <span className="orb o2"></span>
+                <span className="orb o3"></span>
+              </div>
+              <div className="home-container py-8 w-full relative z-10">
                 <div className="glass-elevated rounded-3xl p-8 sm:p-12 relative overflow-hidden text-center">
                   <div className="absolute inset-0 bg-gradient-to-br from-[var(--sitio-yellow)]/10 via-[var(--sitio-green)]/5 to-[var(--sitio-blue)]/10 pointer-events-none"></div>
                   <div className="relative z-10">
