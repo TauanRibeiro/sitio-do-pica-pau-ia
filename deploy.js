@@ -94,10 +94,28 @@ try {
   execSync('git add .', { stdio: 'inherit' });
   
   const commitMsg = `deploy: ${new Date().toISOString()} - Audio system fixes and improvements`;
-  execSync(`git commit -m "${commitMsg}"`, { stdio: 'inherit' });
+  let hasChanges = false;
+  try {
+    const status = execSync('git status --porcelain', { encoding: 'utf-8' }).trim();
+    hasChanges = status.length > 0;
+  } catch (_) {}
+
+  if (hasChanges) {
+    try {
+      execSync(`git commit -m "${commitMsg}"`, { stdio: 'inherit' });
+    } catch (e) {
+      console.log('ℹ️  Nenhuma alteração para commitar em gh-pages (commit pulado).');
+    }
+  } else {
+    console.log('ℹ️  Nenhuma alteração detectada em gh-pages. Pulando commit.');
+  }
   
   console.log('🌍 Fazendo push para GitHub Pages...');
-  execSync('git push origin gh-pages -f', { stdio: 'inherit' });
+  try {
+    execSync('git push origin gh-pages -f', { stdio: 'inherit' });
+  } catch (e) {
+    console.log('⚠️  Push falhou ou está atualizado. Prosseguindo.');
+  }
 
   // 10. Voltar para branch original
   console.log(`🔙 Voltando para branch ${currentBranch}...`);
@@ -116,9 +134,11 @@ try {
   try {
     const cur = execSync('git branch --show-current', { encoding: 'utf-8' }).trim();
     if (cur === 'gh-pages') {
-      // prefer main, fallback to master
-      try { execSync('git checkout main', { stdio: 'inherit' }); }
-      catch { execSync('git checkout master', { stdio: 'inherit' }); }
+      // prefer main if exists, otherwise fallback to master
+      let hasMain = false;
+      try { execSync('git rev-parse --verify main', { stdio: 'pipe' }); hasMain = true; } catch {}
+      const fallback = hasMain ? 'main' : 'master';
+      execSync(`git checkout ${fallback}`, { stdio: 'inherit' });
     }
   } catch {}
   
