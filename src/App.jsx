@@ -445,16 +445,32 @@ function App() {
             <div style={{ position:'absolute', inset:0, background:'rgba(0,0,0,0.45)', backdropFilter:'blur(2px)' }} onClick={() => setShowDifficultyModal(false)} />
             <motion.div className="relative glass-elevated rounded-3xl max-w-sm w-full p-8 mx-4" initial={{ y: 30, opacity: 0, scale: 0.98 }} animate={{ y: 0, opacity: 1, scale: 1 }} exit={{ y: 30, opacity: 0, scale: 0.98 }} transition={{ type: 'spring', stiffness: 220, damping: 22 }}>
               <h3 className="text-xl font-black mb-6 text-center">Escolha a Dificuldade</h3>
-              <div className="grid grid-cols-1 gap-4 mb-6">
+              <div className="grid grid-cols-1 gap-3 mb-6">
                 {['easy', 'medium', 'hard'].map(level => (
                   <button 
                     key={level}
                     onClick={() => setPendingDifficulty(level)}
-                    className={`px-4 py-4 rounded-xl text-left font-bold transition-all text-sm ${pendingDifficulty === level ? 'bg-[var(--sitio-green)] text-white ring-2 ring-white/50' : 'glass hover:glass-elevated'}`}
+                    className={`group relative overflow-hidden rounded-2xl text-left font-extrabold transition-all text-sm focus:outline-none focus-visible:ring-4 ring-[var(--accent)]/40 ${
+                      pendingDifficulty === level
+                        ? 'text-white shadow-xl'
+                        : 'text-[var(--fg)] hover:shadow-lg'
+                    }`}
+                    style={{
+                      WebkitMaskImage: 'radial-gradient(white, black)',
+                    }}
                   >
-                    {level === 'easy' && 'Fácil (4 pares)'}
-                    {level === 'medium' && 'Médio (8 pares)'}
-                    {level === 'hard' && 'Difícil (12 pares)'}
+                    <span className={`${
+                      pendingDifficulty === level
+                        ? 'bg-gradient-to-r from-[var(--sitio-green)] via-[#32CD32] to-[var(--sitio-green)]'
+                        : 'bg-[color:var(--glass-surface,#ffffff1a)]'
+                    } block px-5 py-4 rounded-2xl`}> 
+                      {level === 'easy' && 'Fácil (4 pares)'}
+                      {level === 'medium' && 'Médio (8 pares)'}
+                      {level === 'hard' && 'Difícil (12 pares)'}
+                    </span>
+                    {pendingDifficulty === level && (
+                      <span aria-hidden className="pointer-events-none absolute inset-0 rounded-2xl ring-2 ring-white/50" />
+                    )}
                   </button>
                 ))}
               </div>
@@ -508,15 +524,17 @@ function App() {
           <motion.div style={{ position:'fixed', inset:0, zIndex: 2400, display:'flex', alignItems:'center', justifyContent:'center', padding:'1rem' }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             <div style={{ position:'absolute', inset:0, background:'rgba(0,0,0,0.45)', backdropFilter:'blur(2px)' }} onClick={() => setShowAboutModal(false)} />
             <motion.div 
-              className="relative glass-elevated rounded-3xl max-w-lg w-full p-8 mx-4 text-center border-2 border-[var(--sitio-yellow)]/40 max-h-[85vh] overflow-auto"
+              className="relative glass-elevated rounded-3xl max-w-lg w-full p-6 sm:p-8 mx-4 text-center border-2 border-[var(--sitio-yellow)]/40 max-h-[85vh] overflow-auto"
               initial={{ y: 30, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: 30, opacity: 0 }}
             >
-              <h3 className="text-2xl font-black mb-6">Sobre o Projeto</h3>
-              <p className="mb-6 text-sm leading-relaxed">Este é um projeto de demonstração para a Feira de Ciências, combinando o universo de Monteiro Lobato com tecnologias de Inteligência Artificial.</p>
-              <p className="font-bold mb-8 text-sm">Desenvolvido por: Malie, Tauan, Carla e Vovó Jane.</p>
-              <button className="px-6 py-3 rounded-xl bg-gradient-to-r from-[var(--sitio-green)] to-[var(--sitio-blue)] text-white font-bold text-sm" onClick={() => setShowAboutModal(false)}>Fechar</button>
+              <div className="rounded-2xl p-4 sm:p-5 md:p-6 bg-[color:var(--glass-surface,#ffffff14)]">
+                <h3 className="text-2xl font-black mb-4 sm:mb-6">Sobre o Projeto</h3>
+                <p className="mb-4 sm:mb-6 text-sm leading-relaxed">Este é um projeto de demonstração para a Feira de Ciências, combinando o universo de Monteiro Lobato com tecnologias de Inteligência Artificial.</p>
+                <p className="font-bold mb-6 sm:mb-8 text-sm">Desenvolvido por: Malie, Tauan, Carla e Vovó Jane.</p>
+                <button className="px-6 py-3 rounded-xl bg-gradient-to-r from-[var(--sitio-green)] to-[var(--sitio-blue)] text-white font-bold text-sm" onClick={() => setShowAboutModal(false)}>Fechar</button>
+              </div>
             </motion.div>
           </motion.div>
         )}
