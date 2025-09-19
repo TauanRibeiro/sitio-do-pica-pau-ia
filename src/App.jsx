@@ -220,13 +220,13 @@ function App() {
           <div className="brand">
             <motion.div 
               whileHover={{ rotate: -5, scale: 1.1 }}
-              className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-gradient-to-br from-[var(--sitio-yellow)] to-[var(--sitio-orange)] grid place-items-center text-2xl shadow-lg cursor-pointer"
+              className="home-icon-btn"
               onClick={() => setView('home')}
               title="Ir para página inicial"
             >
               🏡
             </motion.div>
-            <h1 className="text-lg sm:text-xl font-black text-with-bg show-desktop">Sítio IA</h1>
+            <h1 className="brand-title show-desktop">Sítio IA</h1>
           </div>
           <div className="header-actions">
             <button
