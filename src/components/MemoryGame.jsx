@@ -190,7 +190,7 @@ function shuffle(array) {
   return arr
 }
 
-export default function MemoryGame({ musicPlaying }) {
+export default function MemoryGame({ musicPlaying, difficulty, onFinish, onExit }) {
   const { confirm } = useDialog()
   const asset = useCallback((p) => {
     try {
@@ -206,7 +206,6 @@ export default function MemoryGame({ musicPlaying }) {
   const [matched, setMatched] = useState([])
   const [score, setScore] = useState(0)
   const [finished, setFinished] = useState(false)
-  const [difficulty] = useState(() => localStorage.getItem('memoryDifficulty') || 'easy')
   const [moves, setMoves] = useState(0)
   const [showCelebration, setShowCelebration] = useState(false)
   const [showLeaderboard, setShowLeaderboard] = useState(false)
@@ -574,7 +573,7 @@ export default function MemoryGame({ musicPlaying }) {
           const ok = await confirm({ title: 'Sair do jogo?', message: 'Deseja sair do jogo atual? Seu progresso será perdido.', icon: '🚪', okText: 'Sair', cancelText: 'Cancelar' })
           if (ok) {
             if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null }
-            window.dispatchEvent(new CustomEvent('sitio:navigate', { detail: 'vision' }))
+            onExit()
           }
         }}
         aria-label="Sair do jogo"
