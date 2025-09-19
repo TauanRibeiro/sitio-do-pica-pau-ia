@@ -29,7 +29,7 @@ function ThemeToggle({ theme, setTheme }) {
 }
 
 // Circular Music Toggle component
-function MusicToggle({ isOn, onToggle, onAdvanced, disabled = false, labelOn = 'Pausar música', labelOff = 'Tocar música' }) {
+function MusicToggle({ isOn, onToggle, disabled = false, labelOn = 'Pausar música', labelOff = 'Tocar música' }) {
   return (
     <div className="relative flex items-center">
       <button
@@ -46,14 +46,6 @@ function MusicToggle({ isOn, onToggle, onAdvanced, disabled = false, labelOn = '
         {isOn && (
           <span className="absolute inset-0 rounded-full animate-ping bg-[var(--secondary)]/25" aria-hidden />
         )}
-      </button>
-      <button
-        type="button"
-        aria-label="Configurações avançadas de áudio"
-        className="ml-2 w-8 h-8 rounded-full glass text-[var(--accent)] hover:glass-elevated focus:outline-none focus-visible:ring-2 ring-[var(--accent)]/50"
-        onClick={onAdvanced}
-      >
-        <span className="text-lg">⚙️</span>
       </button>
     </div>
   );
@@ -227,7 +219,7 @@ function App() {
             >
               <span className="text-lg">📷</span>
             </button>
-            <MusicToggle isOn={musicPlaying} onToggle={() => setMusicPlaying(v => !v)} onAdvanced={() => setShowAudioModal(true)} />
+            <MusicToggle isOn={musicPlaying} onToggle={() => setMusicPlaying(v => !v)} />
             <ThemeToggle theme={theme} setTheme={setTheme} />
             <button 
               onClick={() => setShowAudioModal(true)}
@@ -238,10 +230,11 @@ function App() {
             </button>
             <button 
               onClick={() => setShowAboutModal(true)}
-              className="grid place-items-center w-12 h-12 rounded-full glass hover:glass-elevated text-[var(--fg)] transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-yellow-400 shadow-md hover:scale-105"
-              aria-label="Quem somos"
+              className="tab-btn text-xs sm:text-sm"
+              aria-label="Sobre o projeto"
             >
-              <span className="text-lg">ℹ️</span>
+              <span className="hidden sm:inline">Quem Somos</span>
+              <span className="sm:hidden text-lg">ℹ️</span>
             </button>
           </div>
         </motion.header>
